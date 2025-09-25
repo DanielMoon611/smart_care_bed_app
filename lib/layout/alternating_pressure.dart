@@ -16,13 +16,19 @@ class _AlternatingPressurePageState extends State<AlternatingPressurePage> {
   final ValueNotifier<double> body2 = ValueNotifier(5.0);
   final ValueNotifier<double> reg   = ValueNotifier(5.0);
 
-  final ValueNotifier<String> selectedMode = ValueNotifier('STD1');
+  // final ValueNotifier<String> selectedMode = ValueNotifier('STD1');
   final ValueNotifier<bool> isSettingFocused = ValueNotifier(false);
   final ValueNotifier<bool> isInitFocused = ValueNotifier(false);
 
   @override
+  void initState() {
+    super.initState();
+    selectedMode.value = 'STD1';
+  }
+
+  @override
   void dispose() {
-    selectedMode.dispose();
+    // selectedMode.dispose();
     head.dispose();
     body1.dispose();
     body2.dispose();
@@ -324,50 +330,122 @@ class _AlternatingPressurePageState extends State<AlternatingPressurePage> {
                                                     right: 10,
                                                     bottom: 10,
                                                     child: ValueListenableBuilder<bool>(
-                                                      valueListenable: activeMode,
-                                                      builder: (context, isStart, _) {
-                                                        return GestureDetector(
-                                                          onTap: () async {
-                                                            if (BleService.I.firstConnectedId == null) {
-                                                              showCenterToast(context, "침대를 연결해주세요");
-                                                              return;
-                                                            }
-                                                            if (isStart) {
-                                                              activeMode.value = false;
-                                                              if (mode == '교대부양') {
-                                                                final command = selectedMode.value;
-                                                                debugPrint("$mode을 실행");
-                                                                await BleService.I.sendToAllConnected(command.codeUnits);
-                                                              } else if (mode != '교대부양' || mode == '') {
-                                                                mode = '교대부양';
-                                                                final command = selectedMode.value;
-                                                                debugPrint("$mode을 실행");
-                                                                await BleService.I.sendToAllConnected(command.codeUnits);
-                                                              }
-                                                            } else {
-                                                              activeMode.value = true;
-                                                              debugPrint("$mode을 종료");
-                                                              if (mode == 'CARE1' || mode == 'CARE2') {
-                                                                await BleService.I.sendToAllConnected('INIT'.codeUnits);
-                                                              } else {
-                                                                await BleService.I.sendToAllConnected('STOP'.codeUnits);
-                                                              }
-                                                              mode = '';
-                                                            }
+                                                      valueListenable: CprLock.I.isLocked,
+                                                      builder: (context, locked, _) {
+                                                        return ValueListenableBuilder<bool>(
+                                                          valueListenable: activeMode,
+                                                          builder: (context, isStart, _) {
+                                                            return ValueListenableBuilder<bool>(
+                                                              valueListenable: isPauseFocused,
+                                                              builder: (context, pause, __) {
+                                                                String asset;
+
+                                                                if (locked) {
+                                                                  // CPR 실행 중 → 현재 상태에 맞는 disabled 아이콘
+                                                                  if (isStart) {
+                                                                    asset = 'assets/btn_start_disabled.png';
+                                                                  } else {
+                                                                    asset = 'assets/btn_stop_disabled.png';
+                                                                  }
+                                                                } else if (isStart) {
+                                                                  asset = 'assets/btn_start.png';
+                                                                } else {
+                                                                  asset = pause ? 'assets/btn_start.png' : 'assets/btn_stop.png';
+                                                                }
+
+                                                                return GestureDetector(
+                                                                  onTap: locked
+                                                                      ? null // ✅ CPR 실행 중 → START 버튼 아예 눌리지 않음
+                                                                      : () async {
+                                                                          if (BleService.I.firstConnectedId == null) {
+                                                                            showCenterToast(context, "침대를 연결해주세요");
+                                                                            return;
+                                                                          }
+
+                                                                          if (isStart || isPauseFocused.value) {
+                                                                            activeMode.value = false;
+                                                                            // isPauseFocused.value = false;
+                                                                            mode = "교대부양"; // 페이지에 맞게 모드명 수정
+                                                                            final command = selectedMode.value;
+
+                                                                            // ✅ PAUSE 상태였다면 해제하면서 START 실행
+                                                                            if (isPauseFocused.value) {
+                                                                              isPauseFocused.value = false;
+                                                                            }
+                                                                            
+                                                                            await BleService.I.sendToAllConnected(command.codeUnits);
+                                                                          } else {
+                                                                            activeMode.value = true;
+                                                                            isPauseFocused.value = false;
+                                                                            await BleService.I.sendToAllConnected('STOP'.codeUnits);
+                                                                            mode = '';
+                                                                          }
+                                                                        },
+                                                                  child: SizedBox(
+                                                                    width: size,
+                                                                    height: size,
+                                                                    child: Image.asset(
+                                                                      asset,
+                                                                      fit: BoxFit.contain,
+                                                                      gaplessPlayback: true,
+                                                                    ),
+                                                                  ),
+                                                                );
+                                                              },
+                                                            );
                                                           },
-                                                          child: SizedBox(
-                                                            width: size,
-                                                            height: size,
-                                                            child: Image.asset(
-                                                              isStart ? 'assets/btn_start.png' : 'assets/btn_stop.png',
-                                                              fit: BoxFit.contain,
-                                                              gaplessPlayback: true,
-                                                            ),
-                                                          ),
                                                         );
                                                       },
-                                                    ),
+                                                    )
                                                   ),
+                                                  // Positioned(
+                                                  //   right: 10,
+                                                  //   bottom: 10,
+                                                  //   child: ValueListenableBuilder<bool>(
+                                                  //     valueListenable: activeMode,
+                                                  //     builder: (context, isStart, _) {
+                                                  //       return GestureDetector(
+                                                  //         onTap: () async {
+                                                  //           if (BleService.I.firstConnectedId == null) {
+                                                  //             showCenterToast(context, "침대를 연결해주세요");
+                                                  //             return;
+                                                  //           }
+                                                  //           if (isStart) {
+                                                  //             activeMode.value = false;
+                                                  //             if (mode == '교대부양') {
+                                                  //               final command = selectedMode.value;
+                                                  //               debugPrint("$mode을 실행");
+                                                  //               await BleService.I.sendToAllConnected(command.codeUnits);
+                                                  //             } else if (mode != '교대부양' || mode == '') {
+                                                  //               mode = '교대부양';
+                                                  //               final command = selectedMode.value;
+                                                  //               debugPrint("$mode을 실행");
+                                                  //               await BleService.I.sendToAllConnected(command.codeUnits);
+                                                  //             }
+                                                  //           } else {
+                                                  //             activeMode.value = true;
+                                                  //             debugPrint("$mode을 종료");
+                                                  //             if (mode == 'CARE1' || mode == 'CARE2') {
+                                                  //               await BleService.I.sendToAllConnected('INIT'.codeUnits);
+                                                  //             } else {
+                                                  //               await BleService.I.sendToAllConnected('STOP'.codeUnits);
+                                                  //             }
+                                                  //             mode = '';
+                                                  //           }
+                                                  //         },
+                                                  //         child: SizedBox(
+                                                  //           width: size,
+                                                  //           height: size,
+                                                  //           child: Image.asset(
+                                                  //             isStart ? 'assets/btn_start.png' : 'assets/btn_stop.png',
+                                                  //             fit: BoxFit.contain,
+                                                  //             gaplessPlayback: true,
+                                                  //           ),
+                                                  //         ),
+                                                  //       );
+                                                  //     },
+                                                  //   ),
+                                                  // ),
                                                 ],
                                               );
                                             },

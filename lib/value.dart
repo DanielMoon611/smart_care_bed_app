@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'dart:async';
 
 // --------------------
 // BLE 통신 관련 상수
@@ -20,6 +21,7 @@ String mode = '';
 
 final ValueNotifier<bool> activeMode = ValueNotifier<bool>(true);
 final ValueNotifier<bool> userRecognitionEnabled = ValueNotifier<bool>(false);
+final ValueNotifier<String> selectedMode = ValueNotifier<String>('');
 
 // 최근 연결된 BLE 장치 ID (자동 연결용)
 String? lastConnectedDeviceId;
@@ -35,3 +37,23 @@ final ValueNotifier<bool> isCprClicked = ValueNotifier<bool>(false);
 
 final ValueNotifier<bool> isToggleFocused = ValueNotifier<bool>(false);
 final GlobalKey<ScaffoldMessengerState> globalMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
+// --------------------
+// ✅ CPR Lock (전역 싱글턴)
+// --------------------
+class CprLock {
+  CprLock._();
+  static final CprLock I = CprLock._();
+
+  final ValueNotifier<bool> isLocked = ValueNotifier<bool>(false);
+  Timer? _timer;
+
+  /// 일정 시간 동안 CPR Lock 활성화
+  void lockFor(Duration d) {
+    _timer?.cancel();
+    isLocked.value = true;
+    _timer = Timer(d, () {
+      isLocked.value = false;
+    });
+  }
+}

@@ -4,22 +4,6 @@ import 'package:smart_care_bed_app/app/routes.dart';
 import 'package:smart_care_bed_app/network/ble_service.dart';
 import 'package:smart_care_bed_app/value.dart';
 
-class CprLock {
-  CprLock._();
-  static final CprLock I = CprLock._();
-
-  final ValueNotifier<bool> isLocked = ValueNotifier<bool>(false);
-  Timer? _timer;
-
-  void lockFor(Duration d) {
-    _timer?.cancel();
-    isLocked.value = true;
-    _timer = Timer(d, () {
-      isLocked.value = false;
-    });
-  }
-}
-
 class ControlPanel extends StatefulWidget {
   const ControlPanel({super.key});
 
@@ -83,24 +67,67 @@ class _ControlPanelState extends State<ControlPanel> {
   }
 
   void _action() async {
+    // ✅ 1. BLE 연결 여부 체크
+    if (BleService.I.firstConnectedId == null) {
+      // final m = globalMessengerKey.currentState;
+      // m?.hideCurrentSnackBar();
+      // m?.showSnackBar(
+      //   const SnackBar(
+      //     content: Text("침대를 연결해주세요"),
+      //     duration: Duration(seconds: 2),
+      //     behavior: SnackBarBehavior.floating,
+      //     margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
+      //   ),
+      // );
+      // return;
+      showCenterToast(context, "침대를 연결해주세요");
+      return;
+    }
+
+    if (mode.isEmpty) {
+      // final m = globalMessengerKey.currentState;
+      // m?.hideCurrentSnackBar();
+      // m?.showSnackBar(
+      //   const SnackBar(
+      //     content: Text("모드를 선택해주세요"),
+      //     duration: Duration(seconds: 2),
+      //     behavior: SnackBarBehavior.floating,
+      //     margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
+      //   ),
+      // );
+      // return;
+      showCenterToast(context, "모드를 선택해주세요");
+      return;
+    }
+
+    if (isToggleFocused.value) {
+      final m = globalMessengerKey.currentState;
+      m?.hideCurrentSnackBar();
+      m?.showSnackBar(
+        const SnackBar(
+          content: Text("이동 모드를 종료해주세요(현재 동작중인 버튼 다시 눌러 정지)"),
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
+        ),
+      );
+      return;
+    }
+
     final oldValue = isPauseFocused.value;
     isPauseFocused.value = !oldValue;
 
     try {
       if (isPauseFocused.value) {
-        await BleService.I.sendToAllConnected('start'.codeUnits);
-        debugPrint("BLE send 'start'");
+        await BleService.I.sendToAllConnected('PAUSE'.codeUnits);
       } else {
-        await BleService.I.sendToAllConnected('pause'.codeUnits);
-        debugPrint("BLE send 'pause'");
+        await BleService.I.sendToAllConnected(selectedMode.value.codeUnits);
+        activeMode.value = false;
       }
     } catch (e) {
       debugPrint("BLE send FAIL: $e");
       isPauseFocused.value = oldValue;
       if (!mounted) return;
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   const SnackBar(content: Text('침대를 연결해주세요')),
-      // );
       showCenterToast(context, "침대를 연결해주세요");
     }
 
@@ -132,16 +159,12 @@ class _ControlPanelState extends State<ControlPanel> {
       showCenterToast(context, "침대를 연결해주세요");
       return;
     }
-    // if (isToggleFocused.value) {
-    //   showCenterToast(context, "이동 버튼을 다시 눌러 이동을 종료해주세요");
-    //   return;
-    // }
     if (isToggleFocused.value) {
       final m = globalMessengerKey.currentState;
       m?.hideCurrentSnackBar();
       m?.showSnackBar(
         const SnackBar(
-          content: Text("이동 모드를 종료해주세요(누른 버튼을 다시 눌러 주세요)"),
+          content: Text("이동 모드를 종료해주세요(현재 동작중인 버튼 다시 눌러 정지)"),
           duration: Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -151,7 +174,8 @@ class _ControlPanelState extends State<ControlPanel> {
     }
     isCprClicked.value = true;
     CprLock.I.lockFor(const Duration(seconds: 10));
-    debugPrint("CPR 실행 → 10초 락");
+
+    setState(() {});
   }
 
   String _getHeatImageAsset(int level) {
@@ -245,15 +269,43 @@ class _ControlPanelState extends State<ControlPanel> {
                                       child: Align(
                                         alignment: Alignment.centerRight,
                                         child: ValueListenableBuilder<bool>(
-                                          valueListenable: isPauseFocused,
-                                          builder: (_, pause, _) {
-                                            return _imageControlButton(
-                                              assetPath: locked ? 'assets/btn_pause_disabled.png' : pause ? 'assets/btn_pause_focused.png' : 'assets/btn_pause_icon.png',
-                                              size: buttonSize,
-                                              onPressed: locked ? null : _action,
+                                          valueListenable: CprLock.I.isLocked,
+                                          builder: (context, locked, _) {
+                                            return ValueListenableBuilder<bool>(
+                                              valueListenable: isPauseFocused,
+                                              builder: (_, pause, __) {
+                                                return ValueListenableBuilder<bool>(
+                                                  valueListenable: activeMode,
+                                                  builder: (_, isStart, __) {
+                                                    String asset;
+
+                                                    if (locked) {
+                                                      // ✅ CPR 실행 중 → 다른 버튼처럼 "녹색" 상태 아이콘 표시
+                                                      asset = 'assets/btn_pause_disabled.png'; 
+                                                      // 👉 이 이미지는 'assets/btn_CPR_clicked.png'와 같은 톤으로 준비 필요
+                                                    } else if (isStart) {
+                                                      // start 상태
+                                                      asset = pause
+                                                          ? 'assets/btn_pause_focused.png'
+                                                          : 'assets/btn_pause_icon.png';
+                                                    } else {
+                                                      // stop 상태
+                                                      asset = pause
+                                                          ? 'assets/btn_pause_icon.png'
+                                                          : 'assets/btn_pause_focused.png';
+                                                    }
+
+                                                    return _imageControlButton(
+                                                      assetPath: asset,
+                                                      size: buttonSize,
+                                                      onPressed: locked ? null : _action,
+                                                    );
+                                                  },
+                                                );
+                                              },
                                             );
                                           },
-                                        ),
+                                        )
                                       ),
                                     ),
                                     SizedBox(width: spacing),

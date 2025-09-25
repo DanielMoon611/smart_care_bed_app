@@ -11,14 +11,20 @@ class PatientCarePage extends StatefulWidget {
 }
 
 class _PatientCarePage extends State<PatientCarePage> {
-  final ValueNotifier<String> selectedMode = ValueNotifier('CARE1');
+  // final ValueNotifier<String> selectedMode = ValueNotifier('CARE1');
   final ValueNotifier<bool> isSettingFocused = ValueNotifier(false);
   final ValueNotifier<bool> isInitFocused = ValueNotifier(false);
   final ValueNotifier<String?> toggleSelection = ValueNotifier(null);
 
   @override
+  void initState() {
+    super.initState();
+    selectedMode.value = 'CARE1';
+  }
+
+  @override
   void dispose() {
-    selectedMode.dispose();
+    // selectedMode.dispose();
     isSettingFocused.dispose();
     isInitFocused.dispose();
     super.dispose();
@@ -265,41 +271,97 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                               child: ValueListenableBuilder<bool>(
                                                                 valueListenable: activeMode,
                                                                 builder: (context, isStart, _) {
-                                                                  return GestureDetector(
-                                                                    onTap: () async {
-                                                                      if (BleService.I.firstConnectedId == null) {
-                                                                        showCenterToast(context, "침대를 연결해주세요");
-                                                                        return;
-                                                                      }
+                                                                  return ValueListenableBuilder<bool>(
+                                                                    valueListenable: isPauseFocused,
+                                                                    builder: (context, pause, __) {
+                                                                      String asset;
+
                                                                       if (isStart) {
-                                                                        activeMode.value = false;
-                                                                        mode = selected;
-                                                                        debugPrint("$mode 실행");
-                                                                        await BleService.I.sendToAllConnected(selected.codeUnits);
+                                                                        asset = 'assets/btn_start.png';
                                                                       } else {
-                                                                        activeMode.value = true;
-                                                                        debugPrint("$mode 종료");
-                                                                        if (mode == 'CARE1' || mode == 'CARE2') {
-                                                                          await BleService.I.sendToAllConnected('INIT'.codeUnits);
-                                                                        } else {
-                                                                          await BleService.I.sendToAllConnected('STOP'.codeUnits);
-                                                                        }
-                                                                        mode = '';
+                                                                        asset = pause ? 'assets/btn_start.png' : 'assets/btn_stop.png';
                                                                       }
-                                                                    },
-                                                                    child: SizedBox(
-                                                                      width: size,
-                                                                      height: size,
-                                                                      child: Image.asset(
-                                                                        isStart ? 'assets/btn_start.png' : 'assets/btn_stop.png',
-                                                                        fit: BoxFit.contain,
-                                                                        gaplessPlayback: true,
-                                                                      ),
-                                                                    ),
+
+                                                                      return GestureDetector(
+                                                                        onTap: () async {
+                                                                          if (BleService.I.firstConnectedId == null) {
+                                                                            showCenterToast(context, "침대를 연결해주세요");
+                                                                            return;
+                                                                          }
+
+                                                                          if (isStart) {
+                                                                            activeMode.value = false;
+                                                                            isPauseFocused.value = false;
+                                                                            mode = selected;
+                                                                            await BleService.I.sendToAllConnected(selectedMode.value.codeUnits);
+                                                                          } else {
+                                                                            activeMode.value = true;
+                                                                            isPauseFocused.value = false;
+                                                                            if (mode == 'CARE1' || mode == 'CARE2') {
+                                                                              await BleService.I.sendToAllConnected('INIT'.codeUnits);
+                                                                            } else {
+                                                                              await BleService.I.sendToAllConnected('STOP'.codeUnits);
+                                                                            }
+                                                                            mode = '';
+                                                                          }
+                                                                        },
+                                                                        child: SizedBox(
+                                                                          width: size,
+                                                                          height: size,
+                                                                          child: Image.asset(
+                                                                            asset,
+                                                                            fit: BoxFit.contain,
+                                                                            gaplessPlayback: true,
+                                                                          ),
+                                                                        ),
+                                                                      );
+                                                                    }
                                                                   );
                                                                 },
                                                               ),
                                                             ),
+
+                                                            // Positioned(
+                                                            //   right: 10,
+                                                            //   bottom: 10,
+                                                            //   child: ValueListenableBuilder<bool>(
+                                                            //     valueListenable: activeMode,
+                                                            //     builder: (context, isStart, _) {
+                                                            //       return GestureDetector(
+                                                            //         onTap: () async {
+                                                            //           if (BleService.I.firstConnectedId == null) {
+                                                            //             showCenterToast(context, "침대를 연결해주세요");
+                                                            //             return;
+                                                            //           }
+                                                            //           if (isStart) {
+                                                            //             activeMode.value = false;
+                                                            //             mode = selected;
+                                                            //             debugPrint("$mode 실행");
+                                                            //             await BleService.I.sendToAllConnected(selected.codeUnits);
+                                                            //           } else {
+                                                            //             activeMode.value = true;
+                                                            //             debugPrint("$mode 종료");
+                                                            //             if (mode == 'CARE1' || mode == 'CARE2') {
+                                                            //               await BleService.I.sendToAllConnected('INIT'.codeUnits);
+                                                            //             } else {
+                                                            //               await BleService.I.sendToAllConnected('STOP'.codeUnits);
+                                                            //             }
+                                                            //             mode = '';
+                                                            //           }
+                                                            //         },
+                                                            //         child: SizedBox(
+                                                            //           width: size,
+                                                            //           height: size,
+                                                            //           child: Image.asset(
+                                                            //             isStart ? 'assets/btn_start.png' : 'assets/btn_stop.png',
+                                                            //             fit: BoxFit.contain,
+                                                            //             gaplessPlayback: true,
+                                                            //           ),
+                                                            //         ),
+                                                            //       );
+                                                            //     },
+                                                            //   ),
+                                                            // ),
                                                           ],
                                                         );
                                                       },
@@ -333,14 +395,29 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                               showCenterToast(context, "침대를 연결해주세요");
                                                               return;
                                                             }
+                                                            if (toggleSelection.value == 'right') {
+                                                              final m = globalMessengerKey.currentState;
+                                                              m?.hideCurrentSnackBar();
+                                                              m?.showSnackBar(
+                                                                const SnackBar(
+                                                                  content: Text("오른쪽 이동을 종료해주세요(오른쪽 방향 버튼을 다시 눌러 정지)"),
+                                                                  duration: Duration(seconds: 2),
+                                                                  behavior: SnackBarBehavior.floating,
+                                                                  margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
+                                                                ),
+                                                              );
+                                                              return;
+                                                            }
                                                             if (selected == null) {
+                                                              mode = '돌봄';
                                                               toggleSelection.value = 'left';
                                                               debugPrint("Left ON");
                                                               await BleService.I.sendToAllConnected("LEFT".codeUnits);
                                                             } else if (isFocused) {
-                                                              toggleSelection.value =null;
+                                                              toggleSelection.value = null;
                                                               debugPrint("Left OFF");
                                                               await BleService.I.sendToAllConnected("STOP".codeUnits);
+                                                              mode = '';
                                                             }
                                                           },
                                                           child: FittedBox(
@@ -375,7 +452,21 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                               showCenterToast(context, "침대를 연결해주세요");
                                                               return;
                                                             }
+                                                            if (toggleSelection.value == 'left') {
+                                                              final m = globalMessengerKey.currentState;
+                                                              m?.hideCurrentSnackBar();
+                                                              m?.showSnackBar(
+                                                                const SnackBar(
+                                                                  content: Text("왼쪽 이동을 종료해주세요(왼쪽 방향 버튼을 다시 눌러 정지)"),
+                                                                  duration: Duration(seconds: 2),
+                                                                  behavior: SnackBarBehavior.floating,
+                                                                  margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
+                                                                ),
+                                                              );
+                                                              return;
+                                                            }
                                                             if (selected == null) {
+                                                              mode = '돌봄';
                                                               toggleSelection.value = 'right';
                                                               debugPrint("Right ON");
                                                               await BleService.I.sendToAllConnected("RIGHT".codeUnits);
@@ -383,6 +474,7 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                               toggleSelection.value =null;
                                                               debugPrint("Right OFF");
                                                               await BleService.I.sendToAllConnected("STOP".codeUnits);
+                                                              mode = '';
                                                             }
                                                           },
                                                           child: FittedBox(
