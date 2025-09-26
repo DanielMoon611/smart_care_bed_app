@@ -18,7 +18,7 @@ class _MassagePage extends State<MassagePage> {
   @override
   void initState() {
     super.initState();
-    selectedMode.value = 'MSG1';
+    selectedMode.value = 'MSG1/LV1';
   }
 
   @override
@@ -160,7 +160,6 @@ class _MassagePage extends State<MassagePage> {
                                                             massageIndex.value =
                                                                 (massageIndex.value > 0) ? massageIndex.value - 1 : 5;
                                                             selectedMode.value = "MSG${massageIndex.value + 1}";
-                                                            debugPrint("Selected Mode: ${selectedMode.value}");
                                                           },
                                                         ),
                                                       ),
@@ -176,7 +175,6 @@ class _MassagePage extends State<MassagePage> {
                                                             massageIndex.value =
                                                                 (massageIndex.value < 5) ? massageIndex.value + 1 : 0;
                                                             selectedMode.value = "MSG${massageIndex.value + 1}";
-                                                            debugPrint("Selected Mode: ${selectedMode.value}");
                                                           },
                                                         ),
                                                       ),
