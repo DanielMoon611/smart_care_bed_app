@@ -154,7 +154,7 @@ class _ControlPanelState extends State<ControlPanel> {
     debugPrint("통풍 단계: ${fanLevel.value}");
   }
 
-  void _cpr() {
+  void _cpr() async {
     if (BleService.I.firstConnectedId == null) {
       showCenterToast(context, "침대를 연결해주세요");
       return;
@@ -172,6 +172,7 @@ class _ControlPanelState extends State<ControlPanel> {
       );
       return;
     }
+    await BleService.I.sendToAllConnected('INIT'.codeUnits);
     isCprClicked.value = true;
     CprLock.I.lockFor(const Duration(seconds: 10));
 
