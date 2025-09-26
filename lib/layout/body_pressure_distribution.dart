@@ -21,10 +21,33 @@ class _BodyPressureDistributionPageState extends State<BodyPressureDistributionP
   final ValueNotifier<bool> isSettingFocused = ValueNotifier(false);
   final ValueNotifier<bool> isInitFocused    = ValueNotifier(false);
 
+  late VoidCallback _cprListener;
+
   @override
   void initState() {
     super.initState();
-    selectedMode.value = 'BPD';
+    // selectedMode.value = 'BPD';
+
+    
+    _cprListener = () {
+      if (CprLock.I.isLocked.value) {
+        // CPR 실행 → 버튼 상태 초기화 (모두 비활성화)
+        // isPauseFocused.value = false;
+        // activeMode.value = true;
+        // mode = '';
+        if (mounted) setState(() {});
+      } else {
+        // 🔽 CPR 해제 시 원하는 상태로 복원
+        // STOP 상태에서 CPR 눌렀던 경우 → 다시 START/PAUSE 기본 상태로
+        isPauseFocused.value = false;   // pause 해제 → 'btn_pause_icon.png'
+        activeMode.value = true;       // start 모드 아님 → 'btn_start.png'
+        mode = '';              // 페이지 기본 모드 다시 세팅
+        // selectedMode.value = 'BPD';
+        if (mounted) setState(() {});
+      }
+    };
+
+    CprLock.I.isLocked.addListener(_cprListener);
   }
 
   @override
@@ -35,6 +58,9 @@ class _BodyPressureDistributionPageState extends State<BodyPressureDistributionP
     reg.dispose();
     isSettingFocused.dispose();
     isInitFocused.dispose();
+    
+    CprLock.I.isLocked.removeListener(_cprListener);
+
     super.dispose();
   }
 

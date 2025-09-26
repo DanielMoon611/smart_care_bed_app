@@ -20,21 +20,37 @@ class _AlternatingPressurePageState extends State<AlternatingPressurePage> {
   final ValueNotifier<bool> isSettingFocused = ValueNotifier(false);
   final ValueNotifier<bool> isInitFocused = ValueNotifier(false);
 
+  late VoidCallback _cprListener;
+
   @override
   void initState() {
     super.initState();
     selectedMode.value = 'STD1';
+    _cprListener = () {
+      if (CprLock.I.isLocked.value) {
+        if (mounted) setState(() {});
+      } else {
+        isPauseFocused.value = false;
+        activeMode.value = true;
+        mode = '';
+        if (mounted) setState(() {});
+      }
+    };
+
+    CprLock.I.isLocked.addListener(_cprListener);
   }
 
   @override
   void dispose() {
-    // selectedMode.dispose();
     head.dispose();
     body1.dispose();
     body2.dispose();
     reg.dispose();
     isSettingFocused.dispose();
     isInitFocused.dispose();
+    
+    CprLock.I.isLocked.removeListener(_cprListener);
+
     super.dispose();
   }
 

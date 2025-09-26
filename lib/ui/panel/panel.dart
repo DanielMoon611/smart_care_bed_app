@@ -174,6 +174,7 @@ class _ControlPanelState extends State<ControlPanel> {
     }
     await BleService.I.sendToAllConnected('INIT'.codeUnits);
     isCprClicked.value = true;
+    // selectedMode.value = '';
     CprLock.I.lockFor(const Duration(seconds: 10));
 
     setState(() {});

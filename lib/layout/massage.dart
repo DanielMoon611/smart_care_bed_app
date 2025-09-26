@@ -15,10 +15,24 @@ class _MassagePage extends State<MassagePage> {
   final ValueNotifier<bool> isSettingFocused = ValueNotifier(false);
   final ValueNotifier<bool> isInitFocused    = ValueNotifier(false);
 
+  late VoidCallback _cprListener;
+
   @override
   void initState() {
     super.initState();
     selectedMode.value = 'MSG1/LV1';
+    _cprListener = () {
+      if (CprLock.I.isLocked.value) {
+        if (mounted) setState(() {});
+      } else {
+        isPauseFocused.value = false;
+        activeMode.value = true;
+        mode = '';
+        if (mounted) setState(() {});
+      }
+    };
+
+    CprLock.I.isLocked.addListener(_cprListener);
   }
 
   @override
