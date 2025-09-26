@@ -213,7 +213,7 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                       asset: selected == 'CARE3' ? 'assets/btn_care3_focused.png' : 'assets/btn_care3.png',
                                                       size: size,
                                                       onTap: () {
-                                                        if (!activeMode.value) {
+                                                        if (!activeMode.value && !isPauseFocused.value) {
                                                           final m = globalMessengerKey.currentState;
                                                           m?.hideCurrentSnackBar();
                                                           m?.showSnackBar(
