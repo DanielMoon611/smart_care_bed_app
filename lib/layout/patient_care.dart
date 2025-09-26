@@ -269,56 +269,136 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                               right: 10,
                                                               bottom: 10,
                                                               child: ValueListenableBuilder<bool>(
-                                                                valueListenable: activeMode,
-                                                                builder: (context, isStart, _) {
+                                                                valueListenable: CprLock.I.isLocked,
+                                                                builder: (context, locked, _) {
                                                                   return ValueListenableBuilder<bool>(
-                                                                    valueListenable: isPauseFocused,
-                                                                    builder: (context, pause, __) {
-                                                                      String asset;
+                                                                    valueListenable: activeMode,
+                                                                    builder: (context, isStart, _) {
+                                                                      return ValueListenableBuilder<bool>(
+                                                                        valueListenable: isPauseFocused,
+                                                                        builder: (context, pause, __) {
+                                                                          String asset;
 
-                                                                      if (isStart) {
-                                                                        asset = 'assets/btn_start.png';
-                                                                      } else {
-                                                                        asset = pause ? 'assets/btn_start.png' : 'assets/btn_stop.png';
-                                                                      }
-
-                                                                      return GestureDetector(
-                                                                        onTap: () async {
-                                                                          if (BleService.I.firstConnectedId == null) {
-                                                                            showCenterToast(context, "침대를 연결해주세요");
-                                                                            return;
-                                                                          }
-
-                                                                          if (isStart) {
-                                                                            activeMode.value = false;
-                                                                            isPauseFocused.value = false;
-                                                                            mode = selected;
-                                                                            await BleService.I.sendToAllConnected(selectedMode.value.codeUnits);
-                                                                          } else {
-                                                                            activeMode.value = true;
-                                                                            isPauseFocused.value = false;
-                                                                            if (mode == 'CARE1' || mode == 'CARE2') {
-                                                                              await BleService.I.sendToAllConnected('INIT'.codeUnits);
+                                                                          if (locked) {
+                                                                            // CPR 실행 중 → 현재 상태에 맞는 disabled 아이콘
+                                                                            if (isStart) {
+                                                                              asset = 'assets/btn_start_disabled.png';
                                                                             } else {
-                                                                              await BleService.I.sendToAllConnected('STOP'.codeUnits);
+                                                                              asset = 'assets/btn_stop_disabled.png';
                                                                             }
-                                                                            mode = '';
+                                                                          } else if (isStart) {
+                                                                            asset = 'assets/btn_start.png';
+                                                                          } else {
+                                                                            asset = pause ? 'assets/btn_start.png' : 'assets/btn_stop.png';
                                                                           }
+
+                                                                          return GestureDetector(
+                                                                            onTap: () async {
+                                                                              if (BleService.I.firstConnectedId == null) {
+                                                                                final m = globalMessengerKey.currentState;
+                                                                                m?.hideCurrentSnackBar();
+                                                                                m?.showSnackBar(
+                                                                                  const SnackBar(
+                                                                                    content: Text("침대를 연결해주세요"),
+                                                                                    duration: Duration(seconds: 2),
+                                                                                    behavior: SnackBarBehavior.floating,
+                                                                                    margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
+                                                                                  ),
+                                                                                );
+                                                                                return;
+                                                                                // showCenterToast(context, "침대를 연결해주세요");
+                                                                                // return;
+                                                                              }
+
+                                                                              if (isStart || isPauseFocused.value) {
+                                                                                activeMode.value = false;
+                                                                                // isPauseFocused.value = false;
+                                                                                mode = selected;
+
+                                                                                // ✅ PAUSE 상태였다면 해제하면서 START 실행
+                                                                                if (isPauseFocused.value) {
+                                                                                  isPauseFocused.value = false;
+                                                                                }
+                                                                                
+                                                                                await BleService.I.sendToAllConnected(selectedMode.value.codeUnits);
+                                                                              } else {
+                                                                                activeMode.value = true;
+                                                                                isPauseFocused.value = false;
+                                                                                if (mode == 'CARE1' || mode == 'CARE2') {
+                                                                                  await BleService.I.sendToAllConnected('INIT'.codeUnits);
+                                                                                } else {
+                                                                                  await BleService.I.sendToAllConnected('STOP'.codeUnits);
+                                                                                }
+                                                                                mode = '';
+                                                                              }
+                                                                            },
+                                                                            child: SizedBox(
+                                                                              width: size,
+                                                                              height: size,
+                                                                              child: Image.asset(
+                                                                                asset,
+                                                                                fit: BoxFit.contain,
+                                                                                gaplessPlayback: true,
+                                                                              ),
+                                                                            ),
+                                                                          );
                                                                         },
-                                                                        child: SizedBox(
-                                                                          width: size,
-                                                                          height: size,
-                                                                          child: Image.asset(
-                                                                            asset,
-                                                                            fit: BoxFit.contain,
-                                                                            gaplessPlayback: true,
-                                                                          ),
-                                                                        ),
                                                                       );
-                                                                    }
+                                                                    },
                                                                   );
                                                                 },
-                                                              ),
+                                                              )
+                                                              // child: ValueListenableBuilder<bool>(
+                                                              //   valueListenable: activeMode,
+                                                              //   builder: (context, isStart, _) {
+                                                              //     return ValueListenableBuilder<bool>(
+                                                              //       valueListenable: isPauseFocused,
+                                                              //       builder: (context, pause, __) {
+                                                              //         String asset;
+
+                                                              //         if (isStart) {
+                                                              //           asset = 'assets/btn_start.png';
+                                                              //         } else {
+                                                              //           asset = pause ? 'assets/btn_start.png' : 'assets/btn_stop.png';
+                                                              //         }
+
+                                                              //         return GestureDetector(
+                                                              //           onTap: () async {
+                                                              //             if (BleService.I.firstConnectedId == null) {
+                                                              //               showCenterToast(context, "침대를 연결해주세요");
+                                                              //               return;
+                                                              //             }
+
+                                                              //             if (isStart) {
+                                                              //               activeMode.value = false;
+                                                              //               isPauseFocused.value = false;
+                                                              //               mode = selected;
+                                                              //               await BleService.I.sendToAllConnected(selectedMode.value.codeUnits);
+                                                              //             } else {
+                                                              //               activeMode.value = true;
+                                                              //               isPauseFocused.value = false;
+                                                              //               if (mode == 'CARE1' || mode == 'CARE2') {
+                                                              //                 await BleService.I.sendToAllConnected('INIT'.codeUnits);
+                                                              //               } else {
+                                                              //                 await BleService.I.sendToAllConnected('STOP'.codeUnits);
+                                                              //               }
+                                                              //               mode = '';
+                                                              //             }
+                                                              //           },
+                                                              //           child: SizedBox(
+                                                              //             width: size,
+                                                              //             height: size,
+                                                              //             child: Image.asset(
+                                                              //               asset,
+                                                              //               fit: BoxFit.contain,
+                                                              //               gaplessPlayback: true,
+                                                              //             ),
+                                                              //           ),
+                                                              //         );
+                                                              //       }
+                                                              //     );
+                                                              //   },
+                                                              // ),
                                                             ),
 
                                                             // Positioned(
