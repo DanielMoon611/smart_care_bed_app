@@ -21,7 +21,10 @@ class _PatientCarePage extends State<PatientCarePage> {
   @override
   void initState() {
     super.initState();
-    selectedMode.value = 'CARE1';
+    // selectedMode.value = 'CARE1';
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      selectedMode.value = "CARE1";  // 기존에 넣으려던 초기값
+    });
     _cprListener = () {
       if (CprLock.I.isLocked.value) {
         if (mounted) setState(() {});
@@ -38,9 +41,9 @@ class _PatientCarePage extends State<PatientCarePage> {
 
   @override
   void dispose() {
-    // selectedMode.dispose();
     isSettingFocused.dispose();
     isInitFocused.dispose();
+    CprLock.I.isLocked.removeListener(_cprListener);
     super.dispose();
   }
 
@@ -308,20 +311,23 @@ class _PatientCarePage extends State<PatientCarePage> {
 
                                                                           return GestureDetector(
                                                                             onTap: locked ? null : () async {
+                                                                              // if (BleService.I.firstConnectedId == null) {
+                                                                              //   final m = globalMessengerKey.currentState;
+                                                                              //   m?.hideCurrentSnackBar();
+                                                                              //   m?.showSnackBar(
+                                                                              //     const SnackBar(
+                                                                              //       content: Text("침대를 연결해주세요"),
+                                                                              //       duration: Duration(seconds: 2),
+                                                                              //       behavior: SnackBarBehavior.floating,
+                                                                              //       margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
+                                                                              //     ),
+                                                                              //   );
+                                                                              //   return;
+                                                                              // }
+
                                                                               if (BleService.I.firstConnectedId == null) {
-                                                                                final m = globalMessengerKey.currentState;
-                                                                                m?.hideCurrentSnackBar();
-                                                                                m?.showSnackBar(
-                                                                                  const SnackBar(
-                                                                                    content: Text("침대를 연결해주세요"),
-                                                                                    duration: Duration(seconds: 2),
-                                                                                    behavior: SnackBarBehavior.floating,
-                                                                                    margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
-                                                                                  ),
-                                                                                );
+                                                                                showCenterToast(context, "침대를 연결해주세요");
                                                                                 return;
-                                                                                // showCenterToast(context, "침대를 연결해주세요");
-                                                                                // return;
                                                                               }
 
                                                                               if (isStart || isPauseFocused.value) {
@@ -533,46 +539,6 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                             );
                                                           },
                                                         );
-                                                        // return GestureDetector(
-                                                        //   behavior: HitTestBehavior.opaque,
-                                                        //   onTap: () async {
-                                                        //     if (BleService.I.firstConnectedId == null) {
-                                                        //       showCenterToast(context, "침대를 연결해주세요");
-                                                        //       return;
-                                                        //     }
-                                                        //     if (toggleSelection.value == 'right') {
-                                                        //       final m = globalMessengerKey.currentState;
-                                                        //       m?.hideCurrentSnackBar();
-                                                        //       m?.showSnackBar(
-                                                        //         const SnackBar(
-                                                        //           content: Text("오른쪽 이동을 종료해주세요(오른쪽 방향 버튼을 다시 눌러 정지)"),
-                                                        //           duration: Duration(seconds: 2),
-                                                        //           behavior: SnackBarBehavior.floating,
-                                                        //           margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
-                                                        //         ),
-                                                        //       );
-                                                        //       return;
-                                                        //     }
-                                                        //     if (selected == null) {
-                                                        //       mode = '돌봄';
-                                                        //       toggleSelection.value = 'left';
-                                                        //       debugPrint("Left ON");
-                                                        //       await BleService.I.sendToAllConnected("LEFT".codeUnits);
-                                                        //     } else if (isFocused) {
-                                                        //       toggleSelection.value = null;
-                                                        //       debugPrint("Left OFF");
-                                                        //       await BleService.I.sendToAllConnected("STOP".codeUnits);
-                                                        //       mode = '';
-                                                        //     }
-                                                        //   },
-                                                        //   child: FittedBox(
-                                                        //     fit: BoxFit.contain,
-                                                        //     child: Image.asset(
-                                                        //       isFocused ? 'assets/btn_left_focused.png' : 'assets/btn_left.png',
-                                                        //       gaplessPlayback: true,
-                                                        //     ),
-                                                        //   ),
-                                                        // );
                                                       },
                                                     ),
                                                   ),
@@ -641,46 +607,6 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                             );
                                                           },
                                                         );
-                                                        // return GestureDetector(
-                                                        //   behavior: HitTestBehavior.opaque,
-                                                        //   onTap: () async {
-                                                        //     if (BleService.I.firstConnectedId == null) {
-                                                        //       showCenterToast(context, "침대를 연결해주세요");
-                                                        //       return;
-                                                        //     }
-                                                        //     if (toggleSelection.value == 'left') {
-                                                        //       final m = globalMessengerKey.currentState;
-                                                        //       m?.hideCurrentSnackBar();
-                                                        //       m?.showSnackBar(
-                                                        //         const SnackBar(
-                                                        //           content: Text("왼쪽 이동을 종료해주세요(왼쪽 방향 버튼을 다시 눌러 정지)"),
-                                                        //           duration: Duration(seconds: 2),
-                                                        //           behavior: SnackBarBehavior.floating,
-                                                        //           margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
-                                                        //         ),
-                                                        //       );
-                                                        //       return;
-                                                        //     }
-                                                        //     if (selected == null) {
-                                                        //       mode = '돌봄';
-                                                        //       toggleSelection.value = 'right';
-                                                        //       debugPrint("Right ON");
-                                                        //       await BleService.I.sendToAllConnected("RIGHT".codeUnits);
-                                                        //     } else if (isFocused) {
-                                                        //       toggleSelection.value =null;
-                                                        //       debugPrint("Right OFF");
-                                                        //       await BleService.I.sendToAllConnected("STOP".codeUnits);
-                                                        //       mode = '';
-                                                        //     }
-                                                        //   },
-                                                        //   child: FittedBox(
-                                                        //     fit: BoxFit.contain,
-                                                        //     child: Image.asset(
-                                                        //       isFocused ? 'assets/btn_right_focused.png' : 'assets/btn_right.png',
-                                                        //       gaplessPlayback: true,
-                                                        //     ),
-                                                        //   ),
-                                                        // );
                                                       },
                                                     ),
                                                   ),

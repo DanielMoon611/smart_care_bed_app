@@ -25,7 +25,10 @@ class _AlternatingPressurePageState extends State<AlternatingPressurePage> {
   @override
   void initState() {
     super.initState();
-    selectedMode.value = 'STD1';
+    // selectedMode.value = 'STD1';
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      selectedMode.value = "STD1"; // 초기값 설정
+    });
     _cprListener = () {
       if (CprLock.I.isLocked.value) {
         if (mounted) setState(() {});
@@ -48,9 +51,7 @@ class _AlternatingPressurePageState extends State<AlternatingPressurePage> {
     reg.dispose();
     isSettingFocused.dispose();
     isInitFocused.dispose();
-    
     CprLock.I.isLocked.removeListener(_cprListener);
-
     super.dispose();
   }
 
@@ -213,47 +214,52 @@ class _AlternatingPressurePageState extends State<AlternatingPressurePage> {
 
                               Container(height: 1, color: Colors.black26),
 
+                              // Expanded(
+                              //   flex: 4,
+                              //   child: LayoutBuilder(
+                              //     builder: (context, box) {
+                              //       final h   = box.maxHeight;
+                              //       final per = h / 4;
+                              //       final groupOuterW = (box.maxWidth * 0.95).toDouble();
+                              //       final groupInnerW = (box.maxWidth * 0.95).toDouble();
+
+                              //       final labelFontSize = ((screenWidth * 0.020).clamp(16.0, 28.0)).toDouble();
+                              //       final labelHeight   = labelFontSize * 1.3;
+
+                              //       Widget one({
+                              //         required String label,
+                              //         required ValueNotifier<double> v,
+                              //         required double sliderWidth,
+                              //       }) {
+                              //         return SizedBox(
+                              //           height: per,
+                              //           child: _sliderBlock(
+                              //             context,
+                              //             label: label,
+                              //             value: v,
+                              //             screenWidth: screenWidth,
+                              //             labelFontSize: labelFontSize,
+                              //             labelHeight: labelHeight,
+                              //             sliderWidth: sliderWidth,
+                              //           ),
+                              //         );
+                              //       }
+
+                              //       return Column(
+                              //         children: [
+                              //           one(label: '머리',     v: head,  sliderWidth: groupOuterW),
+                              //           one(label: '몸통(상)', v: body1, sliderWidth: groupInnerW),
+                              //           one(label: '몸통(하)', v: body2, sliderWidth: groupInnerW),
+                              //           one(label: '다리',     v: reg,   sliderWidth: groupOuterW),
+                              //         ],
+                              //       );
+                              //     },
+                              //   ),
+                              // ),
+
                               Expanded(
                                 flex: 4,
-                                child: LayoutBuilder(
-                                  builder: (context, box) {
-                                    final h   = box.maxHeight;
-                                    final per = h / 4;
-                                    final groupOuterW = (box.maxWidth * 0.95).toDouble();
-                                    final groupInnerW = (box.maxWidth * 0.95).toDouble();
-
-                                    final labelFontSize = ((screenWidth * 0.020).clamp(16.0, 28.0)).toDouble();
-                                    final labelHeight   = labelFontSize * 1.3;
-
-                                    Widget one({
-                                      required String label,
-                                      required ValueNotifier<double> v,
-                                      required double sliderWidth,
-                                    }) {
-                                      return SizedBox(
-                                        height: per,
-                                        child: _sliderBlock(
-                                          context,
-                                          label: label,
-                                          value: v,
-                                          screenWidth: screenWidth,
-                                          labelFontSize: labelFontSize,
-                                          labelHeight: labelHeight,
-                                          sliderWidth: sliderWidth,
-                                        ),
-                                      );
-                                    }
-
-                                    return Column(
-                                      children: [
-                                        one(label: '머리',     v: head,  sliderWidth: groupOuterW),
-                                        one(label: '몸통(상)', v: body1, sliderWidth: groupInnerW),
-                                        one(label: '몸통(하)', v: body2, sliderWidth: groupInnerW),
-                                        one(label: '다리',     v: reg,   sliderWidth: groupOuterW),
-                                      ],
-                                    );
-                                  },
-                                ),
+                                child: SizedBox.shrink(),
                               ),
 
                               Container(height: 1, color: Colors.black26),
@@ -266,64 +272,69 @@ class _AlternatingPressurePageState extends State<AlternatingPressurePage> {
                                     child: Row(
                                       crossAxisAlignment: CrossAxisAlignment.stretch,
                                       children: [
+                                        // Expanded(
+                                        //   flex: 1,
+                                        //   child: Padding(
+                                        //     padding: const EdgeInsets.symmetric(vertical: 6.0),
+                                        //     child: Column(
+                                        //       children: [
+                                        //         Expanded(
+                                        //           child: ValueListenableBuilder<bool>(
+                                        //             valueListenable: isSettingFocused,
+                                        //             builder: (context, focused, _) {
+                                        //               return GestureDetector(
+                                        //                 behavior: HitTestBehavior.opaque,
+                                        //                 onTap: () {
+                                        //                   isSettingFocused.value = !focused;
+                                        //                   debugPrint("SETTING pressed");
+                                        //                 },
+                                        //                 child: FittedBox(
+                                        //                   fit: BoxFit.contain,
+                                        //                   child: Image.asset(
+                                        //                     focused ? 'assets/btn_setting_focused.png' : 'assets/btn_setting.png',
+                                        //                     gaplessPlayback: true,
+                                        //                   ),
+                                        //                 ),
+                                        //               );
+                                        //             },
+                                        //           ),
+                                        //         ),
+                                        //         const SizedBox(height: 8),
+                                        //         Expanded(
+                                        //           child: ValueListenableBuilder<bool>(
+                                        //             valueListenable: isInitFocused,
+                                        //             builder: (context, focused, _) {
+                                        //               return GestureDetector(
+                                        //                 behavior: HitTestBehavior.opaque,
+                                        //                 onTap: () async {
+                                        //                   if (BleService.I.firstConnectedId == null) {
+                                        //                     showCenterToast(context, "침대를 연결해주세요");
+                                        //                     return;
+                                        //                   } else {
+                                        //                     isInitFocused.value = !focused;
+                                        //                     await BleService.I.sendToAllConnected('INIT'.codeUnits);
+                                        //                     debugPrint("INIT pressed");
+                                        //                   }
+                                        //                 },
+                                        //                 child: FittedBox(
+                                        //                   fit: BoxFit.contain,
+                                        //                   child: Image.asset(
+                                        //                     focused ? 'assets/btn_init_focused.png' : 'assets/btn_init.png',
+                                        //                     gaplessPlayback: true,
+                                        //                   ),
+                                        //                 ),
+                                        //               );
+                                        //             },
+                                        //           ),
+                                        //         ),
+                                        //       ],
+                                        //     ),
+                                        //   ),
+                                        // ),
+
                                         Expanded(
                                           flex: 1,
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 6.0),
-                                            child: Column(
-                                              children: [
-                                                Expanded(
-                                                  child: ValueListenableBuilder<bool>(
-                                                    valueListenable: isSettingFocused,
-                                                    builder: (context, focused, _) {
-                                                      return GestureDetector(
-                                                        behavior: HitTestBehavior.opaque,
-                                                        onTap: () {
-                                                          isSettingFocused.value = !focused;
-                                                          debugPrint("SETTING pressed");
-                                                        },
-                                                        child: FittedBox(
-                                                          fit: BoxFit.contain,
-                                                          child: Image.asset(
-                                                            focused ? 'assets/btn_setting_focused.png' : 'assets/btn_setting.png',
-                                                            gaplessPlayback: true,
-                                                          ),
-                                                        ),
-                                                      );
-                                                    },
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 8),
-                                                Expanded(
-                                                  child: ValueListenableBuilder<bool>(
-                                                    valueListenable: isInitFocused,
-                                                    builder: (context, focused, _) {
-                                                      return GestureDetector(
-                                                        behavior: HitTestBehavior.opaque,
-                                                        onTap: () async {
-                                                          if (BleService.I.firstConnectedId == null) {
-                                                            showCenterToast(context, "침대를 연결해주세요");
-                                                            return;
-                                                          } else {
-                                                            isInitFocused.value = !focused;
-                                                            await BleService.I.sendToAllConnected('INIT'.codeUnits);
-                                                            debugPrint("INIT pressed");
-                                                          }
-                                                        },
-                                                        child: FittedBox(
-                                                          fit: BoxFit.contain,
-                                                          child: Image.asset(
-                                                            focused ? 'assets/btn_init_focused.png' : 'assets/btn_init.png',
-                                                            gaplessPlayback: true,
-                                                          ),
-                                                        ),
-                                                      );
-                                                    },
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
+                                          child: SizedBox.shrink(),
                                         ),
 
                                         const VerticalDivider(
@@ -487,73 +498,73 @@ class _AlternatingPressurePageState extends State<AlternatingPressurePage> {
     });
   }
 
-  Widget _sliderBlock(
-    BuildContext context, {
-    required String label,
-    required ValueNotifier<double> value,
-    required double screenWidth,
+  // Widget _sliderBlock(
+  //   BuildContext context, {
+  //   required String label,
+  //   required ValueNotifier<double> value,
+  //   required double screenWidth,
 
-    required double labelFontSize,
-    required double labelHeight,
-    required double sliderWidth,
-  }) {
-    return ValueListenableBuilder<double>(
-      valueListenable: value,
-      builder: (context, v, child) {
-        final sliderValue = v.toInt().clamp(0, 10);
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: labelHeight,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: labelFontSize,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: SizedBox(
-                  width: sliderWidth,
-                  height: double.infinity,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onHorizontalDragUpdate: (details) {
-                      final dx = details.delta.dx;
-                      value.value = (value.value + dx / 20).clamp(0, 10);
-                    },
-                    onTapDown: (details) {
-                      final x = details.localPosition.dx.clamp(0.0, sliderWidth);
-                      final newVal = (x / sliderWidth) * 10.0;
-                      value.value = newVal.clamp(0, 10);
-                    },
-                    child: FittedBox(
-                      fit: BoxFit.fitWidth,
-                      child: Image.asset(
-                        'assets/slider_${sliderValue.toString().padLeft(2, '0')}.png',
-                        gaplessPlayback: true,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  //   required double labelFontSize,
+  //   required double labelHeight,
+  //   required double sliderWidth,
+  // }) {
+  //   return ValueListenableBuilder<double>(
+  //     valueListenable: value,
+  //     builder: (context, v, child) {
+  //       final sliderValue = v.toInt().clamp(0, 10);
+  //       return Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           SizedBox(
+  //             height: labelHeight,
+  //             child: Padding(
+  //               padding: const EdgeInsets.only(left: 8.0),
+  //               child: Align(
+  //                 alignment: Alignment.centerLeft,
+  //                 child: Text(
+  //                   label,
+  //                   maxLines: 1,
+  //                   overflow: TextOverflow.ellipsis,
+  //                   style: TextStyle(
+  //                     fontSize: labelFontSize,
+  //                     fontWeight: FontWeight.w700,
+  //                   ),
+  //                 ),
+  //               ),
+  //             ),
+  //           ),
+  //           Expanded(
+  //             child: Center(
+  //               child: SizedBox(
+  //                 width: sliderWidth,
+  //                 height: double.infinity,
+  //                 child: GestureDetector(
+  //                   behavior: HitTestBehavior.opaque,
+  //                   onHorizontalDragUpdate: (details) {
+  //                     final dx = details.delta.dx;
+  //                     value.value = (value.value + dx / 20).clamp(0, 10);
+  //                   },
+  //                   onTapDown: (details) {
+  //                     final x = details.localPosition.dx.clamp(0.0, sliderWidth);
+  //                     final newVal = (x / sliderWidth) * 10.0;
+  //                     value.value = newVal.clamp(0, 10);
+  //                   },
+  //                   child: FittedBox(
+  //                     fit: BoxFit.fitWidth,
+  //                     child: Image.asset(
+  //                       'assets/slider_${sliderValue.toString().padLeft(2, '0')}.png',
+  //                       gaplessPlayback: true,
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ),
+  //             ),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 }
 
 Widget _tapImage({

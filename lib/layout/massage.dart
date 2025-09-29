@@ -20,7 +20,10 @@ class _MassagePage extends State<MassagePage> {
   @override
   void initState() {
     super.initState();
-    selectedMode.value = 'MSG1/LV1';
+    // selectedMode.value = 'MSG1/LV1';
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      selectedMode.value = "MSG1/LV1"; // 초기값 설정
+    });
     _cprListener = () {
       if (CprLock.I.isLocked.value) {
         if (mounted) setState(() {});
@@ -39,6 +42,7 @@ class _MassagePage extends State<MassagePage> {
   void dispose() {
     isSettingFocused.dispose();
     isInitFocused.dispose();
+    CprLock.I.isLocked.removeListener(_cprListener);
     super.dispose();
   }
 
