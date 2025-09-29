@@ -275,10 +275,10 @@ class _ControlPanelState extends State<ControlPanel> {
                                           builder: (context, locked, _) {
                                             return ValueListenableBuilder<bool>(
                                               valueListenable: isPauseFocused,
-                                              builder: (_, pause, __) {
+                                              builder: (_, pause, _) {
                                                 return ValueListenableBuilder<bool>(
                                                   valueListenable: activeMode,
-                                                  builder: (_, isStart, __) {
+                                                  builder: (_, isStart, _) {
                                                     String asset;
 
                                                     if (locked) {

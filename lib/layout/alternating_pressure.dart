@@ -364,7 +364,7 @@ class _AlternatingPressurePageState extends State<AlternatingPressurePage> {
                                                           builder: (context, isStart, _) {
                                                             return ValueListenableBuilder<bool>(
                                                               valueListenable: isPauseFocused,
-                                                              builder: (context, pause, __) {
+                                                              builder: (context, pause, _) {
                                                                 String asset;
 
                                                                 if (locked) {

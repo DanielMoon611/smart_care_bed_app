@@ -316,6 +316,7 @@ class BleService extends ChangeNotifier {
       await dev.connect(
         timeout: const Duration(seconds: 12),
         autoConnect: false,
+        license: License.free,
       );
 
       if (Platform.isAndroid) {

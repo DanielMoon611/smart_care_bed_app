@@ -320,7 +320,7 @@ class _BodyPressureDistributionPageState extends State<BodyPressureDistributionP
                                                         builder: (context, isStart, _) {
                                                           return ValueListenableBuilder<bool>(
                                                             valueListenable: isPauseFocused,
-                                                            builder: (context, pause, __) {
+                                                            builder: (context, pause, _) {
                                                               String asset;
 
                                                               if (locked) {

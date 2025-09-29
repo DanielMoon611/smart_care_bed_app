@@ -293,7 +293,7 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                                     builder: (context, isStart, _) {
                                                                       return ValueListenableBuilder<bool>(
                                                                         valueListenable: isPauseFocused,
-                                                                        builder: (context, pause, __) {
+                                                                        builder: (context, pause, _) {
                                                                           String asset;
 
                                                                           if (locked) {
@@ -490,7 +490,7 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                         isToggleFocused.value = (selected == 'left' || selected == 'right');
                                                         return ValueListenableBuilder<bool>(
                                                           valueListenable: CprLock.I.isLocked,
-                                                          builder: (context, locked, __) {
+                                                          builder: (context, locked, _) {
                                                             String asset;
                                                             if (locked) {
                                                               asset = 'assets/btn_left_disabled.png';
@@ -558,7 +558,7 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                         isToggleFocused.value = (selected == 'left' || selected == 'right');
                                                         return ValueListenableBuilder<bool>(
                                                           valueListenable: CprLock.I.isLocked,
-                                                          builder: (context, locked, __) {
+                                                          builder: (context, locked, _) {
                                                             String asset;
                                                             if (locked) {
                                                               asset = 'assets/btn_right_disabled.png';

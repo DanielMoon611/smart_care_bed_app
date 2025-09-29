@@ -300,7 +300,7 @@ class _MassagePage extends State<MassagePage> {
                                                           builder: (context, isStart, _) {
                                                             return ValueListenableBuilder<bool>(
                                                               valueListenable: isPauseFocused,
-                                                              builder: (context, pause, __) {
+                                                              builder: (context, pause, _) {
                                                                 String asset;
 
                                                                 if (locked) {

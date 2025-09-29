@@ -30,14 +30,14 @@
 	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
-		<!-- <string>UIInterfaceOrientationPortrait</string> -->
+		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
-		<!-- <string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string> -->
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
@@ -45,12 +45,22 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- BLE 권한 설명 -->
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>블루투스 권한이 필요합니다.</string>
+	<string>Bluetooth 접근 권한이 필요합니다.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>블루투스 권한이 필요합니다.</string>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
+	<string>Bluetooth 권한이 필요합니다.</string>
+
+	<!-- 위치 권한 (BLE 스캔용) -->
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>BLE 기기를 검색하기 위해 위치 접근 권한이 필요합니다.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>BLE 기기를 안정적으로 연결하기 위해 위치 접근 권한이 필요합니다.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>BLE 기기를 안정적으로 연결하기 위해 위치 접근 권한이 필요합니다.</string>
+
 	<key>UIRequiresFullScreen</key>
+	<true/>
 </dict>
 </plist>
