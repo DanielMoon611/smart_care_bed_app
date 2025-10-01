@@ -28,8 +28,33 @@ class _ControlPanelState extends State<ControlPanel> {
 
     _rxSub = BleService.I.rxText$.listen((text) {
       final clean = text.trim();
-      if (clean == "FUNC_1") {
-        isPauseFocused.value = true;
+
+      const validModes = {
+        "BPD", "STD1", "STD2", "STD3",
+        "MSG1/LV1", "MSG1/LV2", "MSG1/LV3",
+        "MSG2/LV1", "MSG2/LV2", "MSG2/LV3",
+        "MSG3/LV1", "MSG3/LV2", "MSG3/LV3",
+        "MSG4/LV1", "MSG4/LV2", "MSG4/LV3",
+        "MSG5/LV1", "MSG5/LV2", "MSG5/LV3",
+        "MSG6/LV1", "MSG6/LV2", "MSG6/LV3",
+        "CARE1", "CARE2",
+      };
+
+      if (validModes.contains(clean)) {
+        activeMode.value = false;
+        isPauseFocused.value = false;
+        selectedMode.value = clean;
+
+        // // ✅ LEFT/RIGHT → CARE3 강제 진입
+        // if (clean == "LEFT" || clean == "RIGHT") {
+        //   selectedMode.value = "CARE3";
+        //   WidgetsBinding.instance.addPostFrameCallback((_) {
+        //     if (mounted) {
+        //       Navigator.of(context).pushReplacementNamed(AppRoutes.patientCare);
+        //     }
+        //   });
+        // }
+
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) setState(() {});
         });
@@ -282,19 +307,11 @@ class _ControlPanelState extends State<ControlPanel> {
                                                     String asset;
 
                                                     if (locked) {
-                                                      // ✅ CPR 실행 중 → 다른 버튼처럼 "녹색" 상태 아이콘 표시
                                                       asset = 'assets/btn_pause_disabled.png'; 
-                                                      // 👉 이 이미지는 'assets/btn_CPR_clicked.png'와 같은 톤으로 준비 필요
                                                     } else if (isStart) {
-                                                      // start 상태
-                                                      asset = pause
-                                                          ? 'assets/btn_pause_focused.png'
-                                                          : 'assets/btn_pause_icon.png';
+                                                      asset = pause ? 'assets/btn_pause_focused.png' : 'assets/btn_pause_icon.png';
                                                     } else {
-                                                      // stop 상태
-                                                      asset = pause
-                                                          ? 'assets/btn_pause_icon.png'
-                                                          : 'assets/btn_pause_focused.png';
+                                                      asset = pause ? 'assets/btn_pause_icon.png' : 'assets/btn_pause_focused.png';
                                                     }
 
                                                     return _imageControlButton(

@@ -47,8 +47,22 @@ Future<void> main() async {
 
       sub = BleService.I.rxText$.listen((text) {
         final clean = text.trim();
-        if (clean == "FUNC_1") {
-          isPauseFocused.value = true;
+
+        const validModes = {
+          "BPD", "STD1", "STD2", "STD3",
+          "MSG1/LV1", "MSG1/LV2", "MSG1/LV3",
+          "MSG2/LV1", "MSG2/LV2", "MSG2/LV3",
+          "MSG3/LV1", "MSG3/LV2", "MSG3/LV3",
+          "MSG4/LV1", "MSG4/LV2", "MSG4/LV3",
+          "MSG5/LV1", "MSG5/LV2", "MSG5/LV3",
+          "MSG6/LV1", "MSG6/LV2", "MSG6/LV3",
+          "CARE1", "CARE2", "LEFT", "RIGHT",
+        };
+
+        if (validModes.contains(clean)) {
+          activeMode.value = false;
+          isPauseFocused.value = false;
+          selectedMode.value = clean;
           completer.complete();
           sub.cancel();
         }
