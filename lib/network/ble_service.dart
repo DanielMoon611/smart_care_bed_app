@@ -130,31 +130,53 @@ class BleService extends ChangeNotifier {
         throw Exception('BLE 권한 필요 (Android: SCAN/CONNECT, 또는 위치)');
       }
     } else if (Platform.isIOS) {
-      final bt = await Permission.bluetooth.request();
-      if (!bt.isGranted) {
-        throw Exception('BLE 권한 필요 (iOS: Bluetooth)');
+      // iOS: BLE 권한 상태 확인 후 재시도
+      var scan = await Permission.bluetoothScan.status;
+      var connect = await Permission.bluetoothConnect.status;
+
+      // 사용자가 아직 권한을 허용하지 않은 경우
+      if (scan.isDenied || connect.isDenied) {
+        await Permission.bluetoothScan.request();
+        await Permission.bluetoothConnect.request();
+      }
+
+      // 권한이 허용됐는지 2차 확인 (딜레이 포함)
+      await Future.delayed(const Duration(milliseconds: 600));
+      scan = await Permission.bluetoothScan.status;
+      connect = await Permission.bluetoothConnect.status;
+
+      // ✅ iOS에서는 BLE 상태도 함께 확인해야 함
+      final adapterState = await FlutterBluePlus.adapterState.first;
+      if (adapterState != BluetoothAdapterState.on) {
+        throw Exception('Bluetooth가 꺼져 있습니다. 설정에서 켜주세요.');
+      }
+
+      if (!scan.isGranted || !connect.isGranted) {
+        // iOS에서 permission_handler가 즉시 반영되지 않는 경우 대비
+        debugPrint('⚠️ BLE 권한이 아직 isGranted로 인식되지 않음. 강제 통과 시도.');
       }
     }
   }
 
   Future<void> startScan() async {
-    await _ensurePerms();
+    try {
+      await _ensurePerms();
+    } catch (e) {
+      debugPrint('⚠️ 권한 확인 중 오류 발생: $e');
+    }
+
     await _waitForBluetoothOn();
 
-    _pruneTimer ??= Timer.periodic(const Duration(seconds: 2), (_) {
-      final now = DateTime.now();
-      final before = _hits.length;
-      _hits.removeWhere(
-        (_, h) =>
-            now.difference(h.lastSeen) > kDisappearAfter &&
-            !_sessions.containsKey(h.remoteId),
-      );
-      if (_hits.length != before) {
-        _order.removeWhere((key) => !_hits.containsKey(key));
-        _scheduleNotify();
-      }
-    });
+    final isAlreadyScanning = await FlutterBluePlus.isScanning.first;
+    if (isAlreadyScanning) {
+      debugPrint('🔁 이미 BLE 스캔 중입니다. 재시작하지 않습니다.');
+      return;
+    }
 
+    // 🔹 딜레이를 500ms → 150ms로 단축 (권한 팝업 이후 안정화 시간)
+    await Future.delayed(const Duration(milliseconds: 150));
+
+    // 🔹 이전 스캔 세션 정리
     await FlutterBluePlus.stopScan();
     await _scanSub?.cancel();
 
@@ -162,13 +184,17 @@ class BleService extends ChangeNotifier {
     _scanning = true;
     notifyListeners();
 
+    // 🔹 빠른 스캔 설정
     await FlutterBluePlus.startScan(
       withServices: const [],
       continuousUpdates: true,
       continuousDivisor: 1,
       androidUsesFineLocation: Platform.isAndroid,
-      androidScanMode: AndroidScanMode.lowLatency,
+      androidScanMode: AndroidScanMode.lowLatency, // 가장 빠른 스캔 모드
+      timeout: const Duration(seconds: 4), // 스캔 지속시간 4초로 제한
     );
+
+    debugPrint('⚡️ BLE 스캔 즉시 시작됨');
 
     _scanSub = FlutterBluePlus.scanResults.listen((results) {
       if (mySession != _scanSessionCounter) return;
@@ -281,6 +307,7 @@ class BleService extends ChangeNotifier {
     FlutterBluePlus.isScanning.where((on) => !on).first.then((_) {
       _scanning = false;
       notifyListeners();
+      debugPrint('⏹️ BLE 스캔 종료됨');
     });
   }
 
