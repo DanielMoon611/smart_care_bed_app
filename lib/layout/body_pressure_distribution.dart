@@ -796,8 +796,7 @@ class BodyPressureDistributionPage extends StatefulWidget {
   const BodyPressureDistributionPage({super.key});
 
   @override
-  State<BodyPressureDistributionPage> createState() =>
-      _BodyPressureDistributionPageState();
+  State<BodyPressureDistributionPage> createState() => _BodyPressureDistributionPageState();
 }
 
 class _BodyPressureDistributionPageState

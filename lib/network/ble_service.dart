@@ -130,34 +130,27 @@ class BleService extends ChangeNotifier {
         throw Exception('BLE 권한 필요 (Android: SCAN/CONNECT, 또는 위치)');
       }
     } else if (Platform.isIOS) {
-      // iOS: BLE 권한 상태 확인 후 재시도
       var scan = await Permission.bluetoothScan.status;
       var connect = await Permission.bluetoothConnect.status;
-
-      // 사용자가 아직 권한을 허용하지 않은 경우
       if (scan.isDenied || connect.isDenied) {
         await Permission.bluetoothScan.request();
         await Permission.bluetoothConnect.request();
       }
-
-      // 권한이 허용됐는지 2차 확인 (딜레이 포함)
       await Future.delayed(const Duration(milliseconds: 600));
       scan = await Permission.bluetoothScan.status;
       connect = await Permission.bluetoothConnect.status;
 
-      // ✅ iOS에서는 BLE 상태도 함께 확인해야 함
       final adapterState = await FlutterBluePlus.adapterState.first;
       if (adapterState != BluetoothAdapterState.on) {
         throw Exception('Bluetooth가 꺼져 있습니다. 설정에서 켜주세요.');
       }
-
       if (!scan.isGranted || !connect.isGranted) {
-        // iOS에서 permission_handler가 즉시 반영되지 않는 경우 대비
         debugPrint('⚠️ BLE 권한이 아직 isGranted로 인식되지 않음. 강제 통과 시도.');
       }
     }
   }
 
+  /// ✅ BLE 스캔 시작
   Future<void> startScan() async {
     try {
       await _ensurePerms();
@@ -173,10 +166,8 @@ class BleService extends ChangeNotifier {
       return;
     }
 
-    // 🔹 딜레이를 500ms → 150ms로 단축 (권한 팝업 이후 안정화 시간)
     await Future.delayed(const Duration(milliseconds: 150));
 
-    // 🔹 이전 스캔 세션 정리
     await FlutterBluePlus.stopScan();
     await _scanSub?.cancel();
 
@@ -184,17 +175,16 @@ class BleService extends ChangeNotifier {
     _scanning = true;
     notifyListeners();
 
-    // 🔹 빠른 스캔 설정
     await FlutterBluePlus.startScan(
       withServices: const [],
       continuousUpdates: true,
       continuousDivisor: 1,
       androidUsesFineLocation: Platform.isAndroid,
-      androidScanMode: AndroidScanMode.lowLatency, // 가장 빠른 스캔 모드
-      timeout: const Duration(seconds: 4), // 스캔 지속시간 4초로 제한
+      androidScanMode: AndroidScanMode.lowLatency,
+      timeout: const Duration(seconds: 5),
     );
 
-    debugPrint('⚡️ BLE 스캔 즉시 시작됨');
+    debugPrint('⚡️ BLE 스캔 시작됨');
 
     _scanSub = FlutterBluePlus.scanResults.listen((results) {
       if (mySession != _scanSessionCounter) return;
@@ -231,7 +221,6 @@ class BleService extends ChangeNotifier {
             final prev = _hits.remove(remoteId)!;
             final idx = _order.indexOf(remoteId);
             if (idx != -1) _order[idx] = stableIdHex;
-
             _hits[stableIdHex] = Hit(
               key: stableIdHex,
               remoteId: remoteId,
@@ -263,7 +252,7 @@ class BleService extends ChangeNotifier {
             len: m[kManufacturerId]?.length ?? 0,
             lastSeen: DateTime.now(),
           );
-          if (!_order.contains(keyId)) _order.add(keyId);
+          if (!_order.contains(keyId)) _order.add(keyId); // 스캔 순서 유지
           changed = true;
         } else {
           final newLen = m[kManufacturerId]?.length ?? prev.len;
@@ -290,24 +279,35 @@ class BleService extends ChangeNotifier {
         }
       }
 
-      final now = DateTime.now();
-      final before = _hits.length;
-      _hits.removeWhere(
-        (_, h) =>
-            now.difference(h.lastSeen) > kDisappearAfter &&
-            !_sessions.containsKey(h.remoteId),
-      );
-      if (_hits.length != before) {
-        _order.removeWhere((key) => !_hits.containsKey(key));
-        changed = true;
-      }
       if (changed) _scheduleNotify();
     });
+
+    _startPruneTimerIfNeeded();
 
     FlutterBluePlus.isScanning.where((on) => !on).first.then((_) {
       _scanning = false;
       notifyListeners();
       debugPrint('⏹️ BLE 스캔 종료됨');
+    });
+  }
+
+  /// 광고가 끊긴 장치만 제거 (리스트 순서 유지)
+  void _startPruneTimerIfNeeded() {
+    _pruneTimer ??= Timer.periodic(const Duration(seconds: 2), (_) {
+      final now = DateTime.now();
+      final before = _hits.length;
+
+      _hits.removeWhere((_, h) {
+        final fresh = now.difference(h.lastSeen) <= kDisappearAfter;
+        final connected = _sessions.containsKey(h.remoteId);
+        return !(fresh || connected); // 광고도 없고 연결도 안 된 장치만 제거
+      });
+
+      _order.removeWhere((key) => !_hits.containsKey(key));
+
+      if (_hits.length != before) {
+        _scheduleNotify();
+      }
     });
   }
 
@@ -322,6 +322,8 @@ class BleService extends ChangeNotifier {
     await FlutterBluePlus.stopScan();
     await _scanSub?.cancel();
     _scanning = false;
+    _pruneTimer?.cancel();
+    _pruneTimer = null;
     notifyListeners();
   }
 
@@ -330,13 +332,11 @@ class BleService extends ChangeNotifier {
       throw Exception('이미 연결된 장치가 있습니다. 먼저 연결을 끊어주세요.');
     }
     if (_sessions.containsKey(remoteId)) return;
-    try { 
-      try {
-        await _waitForBluetoothOn();
-        await FlutterBluePlus.stopScan();
-        await _scanSub?.cancel();
-        await FlutterBluePlus.isScanning.where((v) => !v).first;
-      } catch (_) {}
+    try {
+      await _waitForBluetoothOn();
+      await FlutterBluePlus.stopScan();
+      await _scanSub?.cancel();
+      await FlutterBluePlus.isScanning.where((v) => !v).first;
       await Future.delayed(const Duration(milliseconds: 350));
 
       final dev = BluetoothDevice.fromId(remoteId);
@@ -356,7 +356,6 @@ class BleService extends ChangeNotifier {
           await dev.requestMtu(517);
         } catch (_) {}
       }
-      await Future.delayed(const Duration(milliseconds: 200));
 
       final services = await dev.discoverServices();
       BluetoothCharacteristic? rx, tx;
@@ -380,7 +379,7 @@ class BleService extends ChangeNotifier {
 
       final notifySub = tx.lastValueStream.listen((data) async {
         if (data.isEmpty) return;
-        final text = await compute(utf8.decode, data); // ✅ isolate 처리
+        final text = await compute(utf8.decode, data);
         _rxTextCtrl.add(text);
       });
 
