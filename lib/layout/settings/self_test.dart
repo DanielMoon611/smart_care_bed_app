@@ -212,7 +212,7 @@ class _SelfTestPageState extends State<SelfTestPage> {
                       alignment: Alignment.centerRight,
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.delete_sweep),
-                        label: const Text('표시 초기화'),
+                        label: const Text('Clear'),
                         onPressed: () {
                           setState(() {
                             _sensorLast.clear(); // 데이터만 초기화

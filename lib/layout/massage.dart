@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:smart_care_bed_app/value.dart';
 import 'package:smart_care_bed_app/network/ble_service.dart';
@@ -16,11 +17,24 @@ class _MassagePage extends State<MassagePage> {
   final ValueNotifier<bool> isInitFocused    = ValueNotifier(false);
 
   late VoidCallback _cprListener;
+  late final StreamSubscription<String> _bleRxSub;
 
   @override
   void initState() {
     super.initState();
     // selectedMode.value = 'MSG1/LV1';
+    // ✅ BLE 수신 스트림 구독
+    _bleRxSub = BleService.I.rxText$.listen((msg) {
+      if (msg.trim() == 'MSGEND') {
+        debugPrint('📩 MSGEND 수신 → UI 상태 초기화');
+        if (mounted) {
+          setState(() {
+            activeMode.value = true;       // “시작” 버튼 복귀
+            isPauseFocused.value = false;  // “일시정지” 해제
+          });
+        }
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       selectedMode.value = "MSG1/LV1"; // 초기값 설정
     });
@@ -42,6 +56,7 @@ class _MassagePage extends State<MassagePage> {
   void dispose() {
     isSettingFocused.dispose();
     isInitFocused.dispose();
+    _bleRxSub.cancel();
     CprLock.I.isLocked.removeListener(_cprListener);
     super.dispose();
   }
