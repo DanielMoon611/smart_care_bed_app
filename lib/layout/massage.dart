@@ -22,21 +22,18 @@ class _MassagePage extends State<MassagePage> {
   @override
   void initState() {
     super.initState();
-    // selectedMode.value = 'MSG1/LV1';
-    // ✅ BLE 수신 스트림 구독
     _bleRxSub = BleService.I.rxText$.listen((msg) {
       if (msg.trim() == 'MSGEND') {
-        debugPrint('📩 MSGEND 수신 → UI 상태 초기화');
         if (mounted) {
           setState(() {
-            activeMode.value = true;       // “시작” 버튼 복귀
-            isPauseFocused.value = false;  // “일시정지” 해제
+            activeMode.value = true;
+            isPauseFocused.value = false;
           });
         }
       }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      selectedMode.value = "MSG1/LV1"; // 초기값 설정
+      selectedMode.value = "MSG1/LV1";
     });
     _cprListener = () {
       if (CprLock.I.isLocked.value) {
@@ -70,7 +67,6 @@ class _MassagePage extends State<MassagePage> {
 
       final double titleFontSize    = ((screenWidth * 0.042).clamp(24.0, 60.0)).toDouble();
       final double subtitleFontSize = ((screenWidth * 0.030).clamp(18.0, 40.0)).toDouble();
-
       final double titleBgWidth  = screenWidth * 0.78;
       final double titleBgHeight = titleAreaHeight * 0.95;
 
@@ -80,7 +76,6 @@ class _MassagePage extends State<MassagePage> {
         color: Colors.white,
         child: Column(
           children: [
-            /// Title 영역
             Expanded(
               flex: 1,
               child: Stack(
@@ -122,7 +117,6 @@ class _MassagePage extends State<MassagePage> {
               ),
             ),
 
-            /// Body 영역
             Expanded(
               flex: 9,
               child: Padding(
@@ -147,7 +141,7 @@ class _MassagePage extends State<MassagePage> {
                         ),
                       ),
 
-                      const VerticalDivider(width: 1, thickness: 1, color: Colors.black26),
+                      const VerticalDivider(width: 1, thickness: 1, color: Colors.white),
 
                       Expanded(
                         flex: 1,
@@ -155,7 +149,6 @@ class _MassagePage extends State<MassagePage> {
                           padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.015),
                           child: Column(
                             children: [
-                              /// Massage 선택
                               Expanded(
                                 flex: 2,
                                 child: LayoutBuilder(
@@ -184,14 +177,12 @@ class _MassagePage extends State<MassagePage> {
                                                 Positioned.fill(
                                                   child: Row(
                                                     children: [
-                                                      /// Left 버튼
                                                       Expanded(
                                                         flex: 1,
                                                         child: GestureDetector(
                                                           behavior: HitTestBehavior.translucent,
                                                           onTap: () {
-                                                            massageIndex.value =
-                                                                (massageIndex.value > 0) ? massageIndex.value - 1 : 5;
+                                                            massageIndex.value = (massageIndex.value > 0) ? massageIndex.value - 1 : 5;
                                                             selectedMode.value = "MSG${massageIndex.value + 1}";
                                                           },
                                                         ),
@@ -199,14 +190,12 @@ class _MassagePage extends State<MassagePage> {
 
                                                       const Expanded(flex: 3, child: SizedBox()),
 
-                                                      /// Right 버튼
                                                       Expanded(
                                                         flex: 1,
                                                         child: GestureDetector(
                                                           behavior: HitTestBehavior.translucent,
                                                           onTap: () {
-                                                            massageIndex.value =
-                                                                (massageIndex.value < 5) ? massageIndex.value + 1 : 0;
+                                                            massageIndex.value = (massageIndex.value < 5) ? massageIndex.value + 1 : 0;
                                                             selectedMode.value = "MSG${massageIndex.value + 1}";
                                                           },
                                                         ),
@@ -224,9 +213,8 @@ class _MassagePage extends State<MassagePage> {
                                 ),
                               ),
 
-                              Container(height: 1, color: Colors.black26),
+                              Container(height: 1, color: Colors.white),
 
-                              /// Strength 선택
                               Expanded(
                                 flex: 4,
                                 child: LayoutBuilder(
@@ -247,25 +235,19 @@ class _MassagePage extends State<MassagePage> {
                                               mainAxisAlignment: MainAxisAlignment.center,
                                               children: [
                                                 _tapImage(
-                                                  asset: massageStrength == 'LV1'
-                                                      ? 'assets/btn_massage_lower_focused.png'
-                                                      : 'assets/btn_massage_lower.png',
+                                                  asset: massageStrength == 'LV1' ? 'assets/btn_massage_lower_focused.png' : 'assets/btn_massage_lower.png',
                                                   size: size,
                                                   onTap: () {strength.value = 'LV1';},
                                                 ),
                                                 SizedBox(width: gap),
                                                 _tapImage(
-                                                  asset: massageStrength == 'LV2'
-                                                      ? 'assets/btn_massage_middle_focused.png'
-                                                      : 'assets/btn_massage_middle.png',
+                                                  asset: massageStrength == 'LV2' ? 'assets/btn_massage_middle_focused.png' : 'assets/btn_massage_middle.png',
                                                   size: size,
                                                   onTap: () {strength.value = 'LV2';},
                                                 ),
                                                 SizedBox(width: gap),
                                                 _tapImage(
-                                                  asset: massageStrength == 'LV3'
-                                                      ? 'assets/btn_massage_upper_focused.png'
-                                                      : 'assets/btn_massage_upper.png',
+                                                  asset: massageStrength == 'LV3' ? 'assets/btn_massage_upper_focused.png' : 'assets/btn_massage_upper.png',
                                                   size: size,
                                                   onTap: () {strength.value = 'LV3';},
                                                 ),
@@ -279,9 +261,8 @@ class _MassagePage extends State<MassagePage> {
                                 ),
                               ),
 
-                              Container(height: 1, color: Colors.black26),
+                              Container(height: 1, color: Colors.white),
 
-                              /// Start / Stop 버튼
                               Expanded(
                                 flex: 4,
                                 child: Padding(
@@ -291,9 +272,7 @@ class _MassagePage extends State<MassagePage> {
                                       crossAxisAlignment: CrossAxisAlignment.stretch,
                                       children: [
                                         const Expanded(flex: 1, child: SizedBox.shrink()),
-
-                                        const VerticalDivider(width: 1, thickness: 1, color: Colors.black26),
-
+                                        const VerticalDivider(width: 1, thickness: 1, color: Colors.white),
                                         Expanded(
                                           flex: 2,
                                           child: LayoutBuilder(
@@ -319,9 +298,7 @@ class _MassagePage extends State<MassagePage> {
                                                                 String asset;
 
                                                                 if (locked) {
-                                                                  asset = isStart
-                                                                      ? 'assets/btn_start_disabled.png'
-                                                                      : 'assets/btn_stop_disabled.png';
+                                                                  asset = isStart ? 'assets/btn_start_disabled.png' : 'assets/btn_stop_disabled.png';
                                                                 } else if (isStart) {
                                                                   asset = 'assets/btn_start.png';
                                                                 } else {
@@ -329,38 +306,27 @@ class _MassagePage extends State<MassagePage> {
                                                                 }
 
                                                                 return GestureDetector(
-                                                                  onTap: locked
-                                                                      ? null
-                                                                      : () async {
-                                                                          if (BleService.I.firstConnectedId == null) {
-                                                                            showCenterToast(context, "침대를 연결해주세요");
-                                                                            return;
-                                                                          }
-
-                                                                          if (isStart || isPauseFocused.value) {
-                                                                            activeMode.value = false;
-                                                                            mode = "마사지";
-
-                                                                            // ✅ 항상 새 문자열로 세팅
-                                                                            selectedMode.value =
-                                                                                "MSG${massageIndex.value + 1}/${strength.value}";
-
-                                                                            if (isPauseFocused.value) {
-                                                                              isPauseFocused.value = false;
-                                                                            }
-
-                                                                            await BleService.I.sendToAllConnected(
-                                                                                selectedMode.value.codeUnits);
-                                                                            debugPrint("START 실행: ${selectedMode.value}");
-                                                                          } else {
-                                                                            activeMode.value = true;
-                                                                            isPauseFocused.value = false;
-                                                                            await BleService.I.sendToAllConnected('STOP'.codeUnits);
-                                                                            mode = '';
-                                                                            selectedMode.value = '';
-                                                                            debugPrint("STOP 실행");
-                                                                          }
-                                                                        },
+                                                                  onTap: locked ? null : () async {
+                                                                    if (BleService.I.firstConnectedId == null) {
+                                                                      showCenterToast(context, "침대를 연결해주세요");
+                                                                      return;
+                                                                    }
+                                                                    if (isStart || isPauseFocused.value) {
+                                                                      activeMode.value = false;
+                                                                      mode = "마사지";
+                                                                      selectedMode.value = "MSG${massageIndex.value + 1}/${strength.value}";
+                                                                      if (isPauseFocused.value) {
+                                                                        isPauseFocused.value = false;
+                                                                      }
+                                                                      await BleService.I.sendToAllConnected(selectedMode.value.codeUnits);
+                                                                    } else {
+                                                                      activeMode.value = true;
+                                                                      isPauseFocused.value = false;
+                                                                      await BleService.I.sendToAllConnected('STOP'.codeUnits);
+                                                                      mode = '';
+                                                                      selectedMode.value = '';
+                                                                    }
+                                                                  },
                                                                   child: SizedBox(
                                                                     width: size,
                                                                     height: size,

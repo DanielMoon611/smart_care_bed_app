@@ -11,7 +11,6 @@ class PatientCarePage extends StatefulWidget {
 }
 
 class _PatientCarePage extends State<PatientCarePage> {
-  // final ValueNotifier<String> selectedMode = ValueNotifier('CARE1');
   final ValueNotifier<bool> isSettingFocused = ValueNotifier(false);
   final ValueNotifier<bool> isInitFocused = ValueNotifier(false);
   final ValueNotifier<String?> toggleSelection = ValueNotifier(null);
@@ -21,9 +20,8 @@ class _PatientCarePage extends State<PatientCarePage> {
   @override
   void initState() {
     super.initState();
-    // selectedMode.value = 'CARE1';
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      selectedMode.value = "CARE1";  // 기존에 넣으려던 초기값
+      selectedMode.value = "CARE1";
     });
     _cprListener = () {
       if (CprLock.I.isLocked.value) {
@@ -61,7 +59,6 @@ class _PatientCarePage extends State<PatientCarePage> {
 
             final double titleFontSize = ((screenWidth * 0.042).clamp(24.0, 60.0)).toDouble();
             final double subtitleFontSize = ((screenWidth * 0.030).clamp(18.0, 40.0)).toDouble();
-
             final double titleBgWidth = screenWidth * 0.78;
             final double titleBgHeight = titleAreaHeight * 0.95;
 
@@ -136,11 +133,7 @@ class _PatientCarePage extends State<PatientCarePage> {
                             ),
                           ),
 
-                          const VerticalDivider(
-                            width: 1,
-                            thickness: 1,
-                            color: Colors.black26
-                          ),
+                          const VerticalDivider(width: 1, thickness: 1, color: Colors.white),
 
                           Expanded(
                             flex: 1,
@@ -173,7 +166,6 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                       size: size,
                                                       onTap: () {
                                                         if (isToggleFocused.value) {
-                                                          debugPrint("⚠️ 이동 동작중 → CARE1 선택 차단");
                                                           final m = globalMessengerKey.currentState;
                                                           m?.hideCurrentSnackBar();
                                                           m?.showSnackBar(
@@ -195,7 +187,6 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                       size: size,
                                                       onTap: () {
                                                         if (isToggleFocused.value) {
-                                                          debugPrint("⚠️ 이동 동작중 → CARE2 선택 차단");
                                                           final m = globalMessengerKey.currentState;
                                                           m?.hideCurrentSnackBar();
                                                           m?.showSnackBar(
@@ -242,14 +233,9 @@ class _PatientCarePage extends State<PatientCarePage> {
                                     ),
                                   ),
 
-                                  Container(height: 1, color: Colors.black26),
-
-                                  Expanded(
-                                    flex: 4,
-                                    child: SizedBox.shrink(),
-                                  ),
-
-                                  Container(height: 1, color: Colors.black26),
+                                  Container(height: 1, color: Colors.white),
+                                  Expanded(flex: 4, child: SizedBox.shrink(),),
+                                  Container(height: 1, color: Colors.white),
 
                                   ValueListenableBuilder<String>(
                                     valueListenable: selectedMode,
@@ -263,15 +249,8 @@ class _PatientCarePage extends State<PatientCarePage> {
                                               child: Row(
                                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                                 children: [
-                                                  Expanded(
-                                                    flex: 1,
-                                                    child: SizedBox.shrink()
-                                                  ),
-                                                  const VerticalDivider(
-                                                    width: 1,
-                                                    thickness: 1,
-                                                    color: Colors.black26
-                                                  ),
+                                                  Expanded(flex: 1, child: SizedBox.shrink()),
+                                                  const VerticalDivider(width: 1, thickness: 1, color: Colors.white),
                                                   Expanded(
                                                     flex: 2,
                                                     child: LayoutBuilder(
@@ -295,9 +274,7 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                                         valueListenable: isPauseFocused,
                                                                         builder: (context, pause, _) {
                                                                           String asset;
-
                                                                           if (locked) {
-                                                                            // CPR 실행 중 → 현재 상태에 맞는 disabled 아이콘
                                                                             if (isStart) {
                                                                               asset = 'assets/btn_start_disabled.png';
                                                                             } else {
@@ -311,35 +288,16 @@ class _PatientCarePage extends State<PatientCarePage> {
 
                                                                           return GestureDetector(
                                                                             onTap: locked ? null : () async {
-                                                                              // if (BleService.I.firstConnectedId == null) {
-                                                                              //   final m = globalMessengerKey.currentState;
-                                                                              //   m?.hideCurrentSnackBar();
-                                                                              //   m?.showSnackBar(
-                                                                              //     const SnackBar(
-                                                                              //       content: Text("침대를 연결해주세요"),
-                                                                              //       duration: Duration(seconds: 2),
-                                                                              //       behavior: SnackBarBehavior.floating,
-                                                                              //       margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
-                                                                              //     ),
-                                                                              //   );
-                                                                              //   return;
-                                                                              // }
-
                                                                               if (BleService.I.firstConnectedId == null) {
                                                                                 showCenterToast(context, "침대를 연결해주세요");
                                                                                 return;
                                                                               }
-
                                                                               if (isStart || isPauseFocused.value) {
                                                                                 activeMode.value = false;
-                                                                                // isPauseFocused.value = false;
                                                                                 mode = selected;
-
-                                                                                // ✅ PAUSE 상태였다면 해제하면서 START 실행
                                                                                 if (isPauseFocused.value) {
                                                                                   isPauseFocused.value = false;
                                                                                 }
-                                                                                
                                                                                 await BleService.I.sendToAllConnected(selectedMode.value.codeUnits);
                                                                               } else {
                                                                                 activeMode.value = true;
@@ -368,100 +326,7 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                                   );
                                                                 },
                                                               )
-                                                              // child: ValueListenableBuilder<bool>(
-                                                              //   valueListenable: activeMode,
-                                                              //   builder: (context, isStart, _) {
-                                                              //     return ValueListenableBuilder<bool>(
-                                                              //       valueListenable: isPauseFocused,
-                                                              //       builder: (context, pause, __) {
-                                                              //         String asset;
-
-                                                              //         if (isStart) {
-                                                              //           asset = 'assets/btn_start.png';
-                                                              //         } else {
-                                                              //           asset = pause ? 'assets/btn_start.png' : 'assets/btn_stop.png';
-                                                              //         }
-
-                                                              //         return GestureDetector(
-                                                              //           onTap: () async {
-                                                              //             if (BleService.I.firstConnectedId == null) {
-                                                              //               showCenterToast(context, "침대를 연결해주세요");
-                                                              //               return;
-                                                              //             }
-
-                                                              //             if (isStart) {
-                                                              //               activeMode.value = false;
-                                                              //               isPauseFocused.value = false;
-                                                              //               mode = selected;
-                                                              //               await BleService.I.sendToAllConnected(selectedMode.value.codeUnits);
-                                                              //             } else {
-                                                              //               activeMode.value = true;
-                                                              //               isPauseFocused.value = false;
-                                                              //               if (mode == 'CARE1' || mode == 'CARE2') {
-                                                              //                 await BleService.I.sendToAllConnected('INIT'.codeUnits);
-                                                              //               } else {
-                                                              //                 await BleService.I.sendToAllConnected('STOP'.codeUnits);
-                                                              //               }
-                                                              //               mode = '';
-                                                              //             }
-                                                              //           },
-                                                              //           child: SizedBox(
-                                                              //             width: size,
-                                                              //             height: size,
-                                                              //             child: Image.asset(
-                                                              //               asset,
-                                                              //               fit: BoxFit.contain,
-                                                              //               gaplessPlayback: true,
-                                                              //             ),
-                                                              //           ),
-                                                              //         );
-                                                              //       }
-                                                              //     );
-                                                              //   },
-                                                              // ),
                                                             ),
-
-                                                            // Positioned(
-                                                            //   right: 10,
-                                                            //   bottom: 10,
-                                                            //   child: ValueListenableBuilder<bool>(
-                                                            //     valueListenable: activeMode,
-                                                            //     builder: (context, isStart, _) {
-                                                            //       return GestureDetector(
-                                                            //         onTap: () async {
-                                                            //           if (BleService.I.firstConnectedId == null) {
-                                                            //             showCenterToast(context, "침대를 연결해주세요");
-                                                            //             return;
-                                                            //           }
-                                                            //           if (isStart) {
-                                                            //             activeMode.value = false;
-                                                            //             mode = selected;
-                                                            //             debugPrint("$mode 실행");
-                                                            //             await BleService.I.sendToAllConnected(selected.codeUnits);
-                                                            //           } else {
-                                                            //             activeMode.value = true;
-                                                            //             debugPrint("$mode 종료");
-                                                            //             if (mode == 'CARE1' || mode == 'CARE2') {
-                                                            //               await BleService.I.sendToAllConnected('INIT'.codeUnits);
-                                                            //             } else {
-                                                            //               await BleService.I.sendToAllConnected('STOP'.codeUnits);
-                                                            //             }
-                                                            //             mode = '';
-                                                            //           }
-                                                            //         },
-                                                            //         child: SizedBox(
-                                                            //           width: size,
-                                                            //           height: size,
-                                                            //           child: Image.asset(
-                                                            //             isStart ? 'assets/btn_start.png' : 'assets/btn_stop.png',
-                                                            //             fit: BoxFit.contain,
-                                                            //             gaplessPlayback: true,
-                                                            //           ),
-                                                            //         ),
-                                                            //       );
-                                                            //     },
-                                                            //   ),
-                                                            // ),
                                                           ],
                                                         );
                                                       },
@@ -500,38 +365,36 @@ class _PatientCarePage extends State<PatientCarePage> {
 
                                                             return GestureDetector(
                                                               behavior: HitTestBehavior.opaque,
-                                                              onTap: locked
-                                                                  ? null // CPR 중이면 눌리지 않게
-                                                                  : () async {
-                                                                      if (BleService.I.firstConnectedId == null) {
-                                                                        showCenterToast(context, "침대를 연결해주세요");
-                                                                        return;
-                                                                      }
-                                                                      if (toggleSelection.value == 'right') {
-                                                                        final m = globalMessengerKey.currentState;
-                                                                        m?.hideCurrentSnackBar();
-                                                                        m?.showSnackBar(
-                                                                          const SnackBar(
-                                                                            content: Text("오른쪽 이동을 종료해주세요(오른쪽 방향 버튼을 다시 눌러 정지)"),
-                                                                            duration: Duration(seconds: 2),
-                                                                            behavior: SnackBarBehavior.floating,
-                                                                            margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
-                                                                          ),
-                                                                        );
-                                                                        return;
-                                                                      }
-                                                                      if (selected == null) {
-                                                                        mode = '돌봄';
-                                                                        toggleSelection.value = 'left';
-                                                                        debugPrint("Left ON");
-                                                                        await BleService.I.sendToAllConnected("LEFT".codeUnits);
-                                                                      } else if (isFocused) {
-                                                                        toggleSelection.value = null;
-                                                                        debugPrint("Left OFF");
-                                                                        await BleService.I.sendToAllConnected("PAUSE".codeUnits);
-                                                                        mode = '';
-                                                                      }
-                                                                    },
+                                                              onTap: locked ? null : () async {
+                                                                if (BleService.I.firstConnectedId == null) {
+                                                                  showCenterToast(context, "침대를 연결해주세요");
+                                                                  return;
+                                                                }
+                                                                if (toggleSelection.value == 'right') {
+                                                                  final m = globalMessengerKey.currentState;
+                                                                  m?.hideCurrentSnackBar();
+                                                                  m?.showSnackBar(
+                                                                    const SnackBar(
+                                                                      content: Text("오른쪽 이동을 종료해주세요(오른쪽 방향 버튼을 다시 눌러 정지)"),
+                                                                      duration: Duration(seconds: 2),
+                                                                      behavior: SnackBarBehavior.floating,
+                                                                      margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
+                                                                    ),
+                                                                  );
+                                                                  return;
+                                                                }
+                                                                if (selected == null) {
+                                                                  mode = '돌봄';
+                                                                  toggleSelection.value = 'left';
+                                                                  debugPrint("Left ON");
+                                                                  await BleService.I.sendToAllConnected("LEFT".codeUnits);
+                                                                } else if (isFocused) {
+                                                                  toggleSelection.value = null;
+                                                                  debugPrint("Left OFF");
+                                                                  await BleService.I.sendToAllConnected("PAUSE".codeUnits);
+                                                                  mode = '';
+                                                                }
+                                                              },
                                                               child: FittedBox(
                                                                 fit: BoxFit.contain,
                                                                 child: Image.asset(asset, gaplessPlayback: true),
@@ -543,11 +406,7 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                     ),
                                                   ),
 
-                                                  const VerticalDivider(
-                                                    width: 1,
-                                                    thickness: 1,
-                                                    color: Colors.black26
-                                                  ),
+                                                  const VerticalDivider(width: 1, thickness: 1, color: Colors.white),
 
                                                   Expanded(
                                                     flex: 1,
@@ -568,38 +427,34 @@ class _PatientCarePage extends State<PatientCarePage> {
 
                                                             return GestureDetector(
                                                               behavior: HitTestBehavior.opaque,
-                                                              onTap: locked
-                                                                  ? null // CPR 중이면 눌리지 않게
-                                                                  : () async {
-                                                                      if (BleService.I.firstConnectedId == null) {
-                                                                        showCenterToast(context, "침대를 연결해주세요");
-                                                                        return;
-                                                                      }
-                                                                      if (toggleSelection.value == 'left') {
-                                                                        final m = globalMessengerKey.currentState;
-                                                                        m?.hideCurrentSnackBar();
-                                                                        m?.showSnackBar(
-                                                                          const SnackBar(
-                                                                            content: Text("오른쪽 이동을 종료해주세요(오른쪽 방향 버튼을 다시 눌러 정지)"),
-                                                                            duration: Duration(seconds: 2),
-                                                                            behavior: SnackBarBehavior.floating,
-                                                                            margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
-                                                                          ),
-                                                                        );
-                                                                        return;
-                                                                      }
-                                                                      if (selected == null) {
-                                                                        mode = '돌봄';
-                                                                        toggleSelection.value = 'right';
-                                                                        debugPrint("right ON");
-                                                                        await BleService.I.sendToAllConnected("RIGHT".codeUnits);
-                                                                      } else if (isFocused) {
-                                                                        toggleSelection.value = null;
-                                                                        debugPrint("right OFF");
-                                                                        await BleService.I.sendToAllConnected("PAUSE".codeUnits);
-                                                                        mode = '';
-                                                                      }
-                                                                    },
+                                                              onTap: locked ? null : () async {
+                                                                if (BleService.I.firstConnectedId == null) {
+                                                                  showCenterToast(context, "침대를 연결해주세요");
+                                                                  return;
+                                                                }
+                                                                if (toggleSelection.value == 'left') {
+                                                                  final m = globalMessengerKey.currentState;
+                                                                  m?.hideCurrentSnackBar();
+                                                                  m?.showSnackBar(
+                                                                    const SnackBar(
+                                                                      content: Text("오른쪽 이동을 종료해주세요(오른쪽 방향 버튼을 다시 눌러 정지)"),
+                                                                      duration: Duration(seconds: 2),
+                                                                      behavior: SnackBarBehavior.floating,
+                                                                      margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
+                                                                    ),
+                                                                  );
+                                                                  return;
+                                                                }
+                                                                if (selected == null) {
+                                                                  mode = '돌봄';
+                                                                  toggleSelection.value = 'right';
+                                                                  await BleService.I.sendToAllConnected("RIGHT".codeUnits);
+                                                                } else if (isFocused) {
+                                                                  toggleSelection.value = null;
+                                                                  await BleService.I.sendToAllConnected("PAUSE".codeUnits);
+                                                                  mode = '';
+                                                                }
+                                                              },
                                                               child: FittedBox(
                                                                 fit: BoxFit.contain,
                                                                 child: Image.asset(asset, gaplessPlayback: true),
