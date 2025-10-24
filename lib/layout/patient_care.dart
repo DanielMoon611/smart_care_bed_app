@@ -302,11 +302,12 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                                               } else {
                                                                                 activeMode.value = true;
                                                                                 isPauseFocused.value = false;
-                                                                                if (mode == 'CARE1' || mode == 'CARE2') {
-                                                                                  await BleService.I.sendToAllConnected('INIT'.codeUnits);
-                                                                                } else {
-                                                                                  await BleService.I.sendToAllConnected('STOP'.codeUnits);
-                                                                                }
+                                                                                // if (mode == 'CARE1' || mode == 'CARE2') {
+                                                                                //   await BleService.I.sendToAllConnected('INIT'.codeUnits);
+                                                                                // } else {
+                                                                                //   await BleService.I.sendToAllConnected('STOP'.codeUnits);
+                                                                                // }
+                                                                                await BleService.I.sendToAllConnected('STOP'.codeUnits);
                                                                                 mode = '';
                                                                               }
                                                                             },
@@ -391,7 +392,8 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                                 } else if (isFocused) {
                                                                   toggleSelection.value = null;
                                                                   debugPrint("Left OFF");
-                                                                  await BleService.I.sendToAllConnected("PAUSE".codeUnits);
+                                                                  // await BleService.I.sendToAllConnected("PAUSE".codeUnits);
+                                                                  await BleService.I.sendToAllConnected('STOP'.codeUnits);
                                                                   mode = '';
                                                                 }
                                                               },
@@ -451,7 +453,8 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                                   await BleService.I.sendToAllConnected("RIGHT".codeUnits);
                                                                 } else if (isFocused) {
                                                                   toggleSelection.value = null;
-                                                                  await BleService.I.sendToAllConnected("PAUSE".codeUnits);
+                                                                  // await BleService.I.sendToAllConnected("PAUSE".codeUnits);
+                                                                  await BleService.I.sendToAllConnected('STOP'.codeUnits);
                                                                   mode = '';
                                                                 }
                                                               },
