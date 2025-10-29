@@ -15,6 +15,7 @@ class _MassagePage extends State<MassagePage> {
   final ValueNotifier<String> strength       = ValueNotifier('LV1');
   final ValueNotifier<bool> isSettingFocused = ValueNotifier(false);
   final ValueNotifier<bool> isInitFocused    = ValueNotifier(false);
+  final ValueNotifier<int> massageIndex = ValueNotifier<int>(0);
 
   late VoidCallback _cprListener;
   late final StreamSubscription<String> _bleRxSub;
@@ -69,8 +70,6 @@ class _MassagePage extends State<MassagePage> {
       final double subtitleFontSize = ((screenWidth * 0.030).clamp(18.0, 40.0)).toDouble();
       final double titleBgWidth  = screenWidth * 0.78;
       final double titleBgHeight = titleAreaHeight * 0.95;
-
-      final ValueNotifier<int> massageIndex = ValueNotifier<int>(0);
 
       return Container(
         color: Colors.white,
