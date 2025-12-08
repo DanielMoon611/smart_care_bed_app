@@ -45,16 +45,6 @@ class _ControlPanelState extends State<ControlPanel> {
         isPauseFocused.value = false;
         selectedMode.value = clean;
 
-        // // ✅ LEFT/RIGHT → CARE3 강제 진입
-        // if (clean == "LEFT" || clean == "RIGHT") {
-        //   selectedMode.value = "CARE3";
-        //   WidgetsBinding.instance.addPostFrameCallback((_) {
-        //     if (mounted) {
-        //       Navigator.of(context).pushReplacementNamed(AppRoutes.patientCare);
-        //     }
-        //   });
-        // }
-
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) setState(() {});
         });
@@ -71,8 +61,6 @@ class _ControlPanelState extends State<ControlPanel> {
 
   void _goto(BuildContext context, String routeName) {
     if (isToggleFocused.value) {
-      debugPrint("⚠️ left/right 버튼이 활성화되어 있어 화면 이동 불가");
-
       final m = globalMessengerKey.currentState;
       m?.hideCurrentSnackBar();
       m?.showSnackBar(
@@ -92,35 +80,12 @@ class _ControlPanelState extends State<ControlPanel> {
   }
 
   void _action() async {
-    // ✅ 1. BLE 연결 여부 체크
     if (BleService.I.firstConnectedId == null) {
-      // final m = globalMessengerKey.currentState;
-      // m?.hideCurrentSnackBar();
-      // m?.showSnackBar(
-      //   const SnackBar(
-      //     content: Text("침대를 연결해주세요"),
-      //     duration: Duration(seconds: 2),
-      //     behavior: SnackBarBehavior.floating,
-      //     margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
-      //   ),
-      // );
-      // return;
       showCenterToast(context, "침대를 연결해주세요");
       return;
     }
 
     if (mode.isEmpty) {
-      // final m = globalMessengerKey.currentState;
-      // m?.hideCurrentSnackBar();
-      // m?.showSnackBar(
-      //   const SnackBar(
-      //     content: Text("모드를 선택해주세요"),
-      //     duration: Duration(seconds: 2),
-      //     behavior: SnackBarBehavior.floating,
-      //     margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
-      //   ),
-      // );
-      // return;
       showCenterToast(context, "모드를 선택해주세요");
       return;
     }
@@ -150,15 +115,10 @@ class _ControlPanelState extends State<ControlPanel> {
         activeMode.value = false;
       }
     } catch (e) {
-      debugPrint("BLE send FAIL: $e");
       isPauseFocused.value = oldValue;
       if (!mounted) return;
       showCenterToast(context, "침대를 연결해주세요");
     }
-
-    debugPrint(
-      "PAUSE toggled -> ${isPauseFocused.value ? 'FOCUSED' : 'NORMAL'}",
-    );
   }
 
   void _heat() {
@@ -184,6 +144,7 @@ class _ControlPanelState extends State<ControlPanel> {
       showCenterToast(context, "침대를 연결해주세요");
       return;
     }
+
     if (isToggleFocused.value) {
       final m = globalMessengerKey.currentState;
       m?.hideCurrentSnackBar();
@@ -197,9 +158,29 @@ class _ControlPanelState extends State<ControlPanel> {
       );
       return;
     }
+
+    // 스낵바 안나와서 임시 조치
+    if (activeMode.value == false && isPauseFocused.value == false) {
+      showCenterToast(context, "현재 동작 중인 모드를 종료해주세요");
+      return;
+    }
+
+    // if (activeMode.value == false && isPauseFocused.value == false) {
+    //   final m = globalMessengerKey.currentState;
+    //   m?.hideCurrentSnackBar();
+    //   m?.showSnackBar(
+    //     const SnackBar(
+    //       content: Text("모드 동작 중 비활성화됨"),
+    //       duration: Duration(seconds: 2),
+    //       behavior: SnackBarBehavior.floating,
+    //       margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
+    //     ),
+    //   );
+    //   return;
+    // }
+
     await BleService.I.sendToAllConnected('INIT'.codeUnits);
     isCprClicked.value = true;
-    // selectedMode.value = '';
     CprLock.I.lockFor(const Duration(seconds: 10));
 
     setState(() {});

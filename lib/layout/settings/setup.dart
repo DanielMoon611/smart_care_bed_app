@@ -12,6 +12,38 @@ class SetupPage extends StatefulWidget {
 }
 
 class _SetupPage extends State<SetupPage> {
+
+  final ValueNotifier<bool> isInitFocused = ValueNotifier(false);
+
+  late VoidCallback _cprListener;
+
+  @override
+  void initState() {
+    super.initState();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   selectedMode.value = "STD1";
+    // });
+
+    _cprListener = () {
+      if (CprLock.I.isLocked.value) {
+        if (mounted) setState(() {});
+      } else {
+        isPauseFocused.value = false;
+        activeMode.value = true;
+        mode = '';
+        if (mounted) setState(() {});
+      }
+    };
+    CprLock.I.isLocked.addListener(_cprListener);
+  }
+
+  @override
+  void dispose() {
+    isInitFocused.dispose();
+    CprLock.I.isLocked.removeListener(_cprListener);
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final nav = Navigator.of(context);
