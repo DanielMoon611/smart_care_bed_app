@@ -57,6 +57,7 @@ class _BodyPressureDistributionPageState extends State<BodyPressureDistributionP
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
+      key: globalMessengerKey,
       child: Scaffold(
         backgroundColor: Colors.white,
         body: LayoutBuilder(builder: (context, c) {

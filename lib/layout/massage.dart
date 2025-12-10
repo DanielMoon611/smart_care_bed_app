@@ -61,311 +61,317 @@ class _MassagePage extends State<MassagePage> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, c) {
-      final screenWidth  = c.maxWidth;
-      final screenHeight = c.maxHeight;
-      final titleAreaHeight = screenHeight * 0.2;
+    return ScaffoldMessenger(
+      key: globalMessengerKey,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: LayoutBuilder(builder: (context, c) {
+          final screenWidth  = c.maxWidth;
+          final screenHeight = c.maxHeight;
+          final titleAreaHeight = screenHeight * 0.2;
 
-      final double titleFontSize    = ((screenWidth * 0.042).clamp(24.0, 60.0)).toDouble();
-      final double subtitleFontSize = ((screenWidth * 0.030).clamp(18.0, 40.0)).toDouble();
-      final double titleBgWidth  = screenWidth * 0.78;
-      final double titleBgHeight = titleAreaHeight * 0.95;
+          final double titleFontSize    = ((screenWidth * 0.042).clamp(24.0, 60.0)).toDouble();
+          final double subtitleFontSize = ((screenWidth * 0.030).clamp(18.0, 40.0)).toDouble();
+          final double titleBgWidth  = screenWidth * 0.78;
+          final double titleBgHeight = titleAreaHeight * 0.95;
 
-      return Container(
-        color: Colors.white,
-        child: Column(
-          children: [
-            Expanded(
-              flex: 1,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Image.asset(
-                    'assets/Title_bg.png',
-                    fit: BoxFit.contain,
-                    width: titleBgWidth,
-                    height: titleBgHeight,
-                    gaplessPlayback: true,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+          return Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Stack(
+                    alignment: Alignment.center,
                     children: [
-                      Text(
-                        '마사지',
-                        style: TextStyle(
-                          fontSize: titleFontSize,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          shadows: const [
-                            Shadow(blurRadius: 5, color: Colors.black, offset: Offset(1, 1)),
-                          ],
-                        ),
+                      Image.asset(
+                        'assets/Title_bg.png',
+                        fit: BoxFit.contain,
+                        width: titleBgWidth,
+                        height: titleBgHeight,
+                        gaplessPlayback: true,
                       ),
-                      SizedBox(width: screenWidth * 0.01),
-                      Text(
-                        'Massage',
-                        style: TextStyle(
-                          fontSize: subtitleFontSize,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            Expanded(
-              flex: 9,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child: IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 13.0),
-                            child: Image.asset(
-                              'assets/bar_default_all_human.png',
-                              fit: BoxFit.contain,
-                              height: screenHeight * 0.8,
-                              gaplessPlayback: true,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '마사지',
+                            style: TextStyle(
+                              fontSize: titleFontSize,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              shadows: const [
+                                Shadow(blurRadius: 5, color: Colors.black, offset: Offset(1, 1)),
+                              ],
                             ),
                           ),
-                        ),
-                      ),
-
-                      const VerticalDivider(width: 1, thickness: 1, color: Colors.white),
-
-                      Expanded(
-                        flex: 1,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.015),
-                          child: Column(
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: LayoutBuilder(
-                                  builder: (context, box) {
-                                    final double h = box.maxHeight;
-                                    final double w = box.maxWidth;
-
-                                    return Align(
-                                      alignment: Alignment.center,
-                                      child: SizedBox(
-                                        height: h,
-                                        width: w,
-                                        child: ValueListenableBuilder<int>(
-                                          valueListenable: massageIndex,
-                                          builder: (context, index, _) {
-                                            return Stack(
-                                              children: [
-                                                Center(
-                                                  child: Image.asset(
-                                                    'assets/massage${index + 1}.png',
-                                                    height: h,
-                                                    fit: BoxFit.contain,
-                                                  ),
-                                                ),
-
-                                                Positioned.fill(
-                                                  child: Row(
-                                                    children: [
-                                                      Expanded(
-                                                        flex: 1,
-                                                        child: GestureDetector(
-                                                          behavior: HitTestBehavior.translucent,
-                                                          onTap: () {
-                                                            massageIndex.value = (massageIndex.value > 0) ? massageIndex.value - 1 : 5;
-                                                            selectedMode.value = "MSG${massageIndex.value + 1}";
-                                                          },
-                                                        ),
-                                                      ),
-
-                                                      const Expanded(flex: 3, child: SizedBox()),
-
-                                                      Expanded(
-                                                        flex: 1,
-                                                        child: GestureDetector(
-                                                          behavior: HitTestBehavior.translucent,
-                                                          onTap: () {
-                                                            massageIndex.value = (massageIndex.value < 5) ? massageIndex.value + 1 : 0;
-                                                            selectedMode.value = "MSG${massageIndex.value + 1}";
-                                                          },
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-
-                              Container(height: 1, color: Colors.white),
-
-                              Expanded(
-                                flex: 4,
-                                child: LayoutBuilder(
-                                  builder: (context, box) {
-                                    final double h   = box.maxHeight;
-                                    final double w   = box.maxWidth;
-                                    final double gap = (screenWidth * 0.01);
-                                    final double size = math.min(h, (w - 2 * gap) / 3);
-                                    return Align(
-                                      alignment: Alignment.bottomCenter,
-                                      child: SizedBox(
-                                        height: h,
-                                        width: w,
-                                        child: ValueListenableBuilder<String>(
-                                          valueListenable: strength,
-                                          builder: (context, massageStrength, _) {
-                                            return Row(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                _tapImage(
-                                                  asset: massageStrength == 'LV1' ? 'assets/btn_massage_lower_focused.png' : 'assets/btn_massage_lower.png',
-                                                  size: size,
-                                                  onTap: () {strength.value = 'LV1';},
-                                                ),
-                                                SizedBox(width: gap),
-                                                _tapImage(
-                                                  asset: massageStrength == 'LV2' ? 'assets/btn_massage_middle_focused.png' : 'assets/btn_massage_middle.png',
-                                                  size: size,
-                                                  onTap: () {strength.value = 'LV2';},
-                                                ),
-                                                SizedBox(width: gap),
-                                                _tapImage(
-                                                  asset: massageStrength == 'LV3' ? 'assets/btn_massage_upper_focused.png' : 'assets/btn_massage_upper.png',
-                                                  size: size,
-                                                  onTap: () {strength.value = 'LV3';},
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-
-                              Container(height: 1, color: Colors.white),
-
-                              Expanded(
-                                flex: 4,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 8.0),
-                                  child: IntrinsicHeight(
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                                      children: [
-                                        const Expanded(flex: 1, child: SizedBox.shrink()),
-                                        const VerticalDivider(width: 1, thickness: 1, color: Colors.white),
-                                        Expanded(
-                                          flex: 2,
-                                          child: LayoutBuilder(
-                                            builder: (context, box) {
-                                              final double h = box.maxHeight;
-                                              final double w = box.maxWidth;
-                                              final double size = math.min(w, h);
-
-                                              return Stack(
-                                                children: [
-                                                  Positioned(
-                                                    right: 10,
-                                                    bottom: 10,
-                                                    child: ValueListenableBuilder<bool>(
-                                                      valueListenable: CprLock.I.isLocked,
-                                                      builder: (context, locked, _) {
-                                                        return ValueListenableBuilder<bool>(
-                                                          valueListenable: activeMode,
-                                                          builder: (context, isStart, _) {
-                                                            return ValueListenableBuilder<bool>(
-                                                              valueListenable: isPauseFocused,
-                                                              builder: (context, pause, _) {
-                                                                String asset;
-
-                                                                if (locked) {
-                                                                  asset = isStart ? 'assets/btn_start_disabled.png' : 'assets/btn_stop_disabled.png';
-                                                                } else if (isStart) {
-                                                                  asset = 'assets/btn_start.png';
-                                                                } else {
-                                                                  asset = pause ? 'assets/btn_start.png' : 'assets/btn_stop.png';
-                                                                }
-
-                                                                return GestureDetector(
-                                                                  onTap: locked ? null : () async {
-                                                                    if (BleService.I.firstConnectedId == null) {
-                                                                      showCenterToast(context, "침대를 연결해주세요");
-                                                                      return;
-                                                                    }
-                                                                    if (isStart || isPauseFocused.value) {
-                                                                      activeMode.value = false;
-                                                                      mode = "마사지";
-                                                                      selectedMode.value = "MSG${massageIndex.value + 1}/${strength.value}";
-                                                                      if (isPauseFocused.value) {
-                                                                        isPauseFocused.value = false;
-                                                                      }
-                                                                      await BleService.I.sendToAllConnected(selectedMode.value.codeUnits);
-                                                                    } else {
-                                                                      activeMode.value = true;
-                                                                      isPauseFocused.value = false;
-                                                                      await BleService.I.sendToAllConnected('STOP'.codeUnits);
-                                                                      mode = '';
-                                                                      selectedMode.value = '';
-                                                                    }
-                                                                  },
-                                                                  child: SizedBox(
-                                                                    width: size,
-                                                                    height: size,
-                                                                    child: Image.asset(
-                                                                      asset,
-                                                                      fit: BoxFit.contain,
-                                                                      gaplessPlayback: true,
-                                                                    ),
-                                                                  ),
-                                                                );
-                                                              },
-                                                            );
-                                                          },
-                                                        );
-                                                      },
-                                                    ),
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                          SizedBox(width: screenWidth * 0.01),
+                          Text(
+                            'Massage',
+                            style: TextStyle(
+                              fontSize: subtitleFontSize,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-              ),
+
+                Expanded(
+                  flex: 9,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 10.0),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 13.0),
+                                child: Image.asset(
+                                  'assets/bar_default_all_human.png',
+                                  fit: BoxFit.contain,
+                                  height: screenHeight * 0.8,
+                                  gaplessPlayback: true,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const VerticalDivider(width: 1, thickness: 1, color: Colors.white),
+
+                          Expanded(
+                            flex: 1,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.015),
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    flex: 2,
+                                    child: LayoutBuilder(
+                                      builder: (context, box) {
+                                        final double h = box.maxHeight;
+                                        final double w = box.maxWidth;
+
+                                        return Align(
+                                          alignment: Alignment.center,
+                                          child: SizedBox(
+                                            height: h,
+                                            width: w,
+                                            child: ValueListenableBuilder<int>(
+                                              valueListenable: massageIndex,
+                                              builder: (context, index, _) {
+                                                return Stack(
+                                                  children: [
+                                                    Center(
+                                                      child: Image.asset(
+                                                        'assets/massage${index + 1}.png',
+                                                        height: h,
+                                                        fit: BoxFit.contain,
+                                                      ),
+                                                    ),
+
+                                                    Positioned.fill(
+                                                      child: Row(
+                                                        children: [
+                                                          Expanded(
+                                                            flex: 1,
+                                                            child: GestureDetector(
+                                                              behavior: HitTestBehavior.translucent,
+                                                              onTap: () {
+                                                                massageIndex.value = (massageIndex.value > 0) ? massageIndex.value - 1 : 5;
+                                                                selectedMode.value = "MSG${massageIndex.value + 1}";
+                                                              },
+                                                            ),
+                                                          ),
+
+                                                          const Expanded(flex: 3, child: SizedBox()),
+
+                                                          Expanded(
+                                                            flex: 1,
+                                                            child: GestureDetector(
+                                                              behavior: HitTestBehavior.translucent,
+                                                              onTap: () {
+                                                                massageIndex.value = (massageIndex.value < 5) ? massageIndex.value + 1 : 0;
+                                                                selectedMode.value = "MSG${massageIndex.value + 1}";
+                                                              },
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+
+                                  Container(height: 1, color: Colors.white),
+
+                                  Expanded(
+                                    flex: 4,
+                                    child: LayoutBuilder(
+                                      builder: (context, box) {
+                                        final double h   = box.maxHeight;
+                                        final double w   = box.maxWidth;
+                                        final double gap = (screenWidth * 0.01);
+                                        final double size = math.min(h, (w - 2 * gap) / 3);
+                                        return Align(
+                                          alignment: Alignment.bottomCenter,
+                                          child: SizedBox(
+                                            height: h,
+                                            width: w,
+                                            child: ValueListenableBuilder<String>(
+                                              valueListenable: strength,
+                                              builder: (context, massageStrength, _) {
+                                                return Row(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    _tapImage(
+                                                      asset: massageStrength == 'LV1' ? 'assets/btn_massage_lower_focused.png' : 'assets/btn_massage_lower.png',
+                                                      size: size,
+                                                      onTap: () {strength.value = 'LV1';},
+                                                    ),
+                                                    SizedBox(width: gap),
+                                                    _tapImage(
+                                                      asset: massageStrength == 'LV2' ? 'assets/btn_massage_middle_focused.png' : 'assets/btn_massage_middle.png',
+                                                      size: size,
+                                                      onTap: () {strength.value = 'LV2';},
+                                                    ),
+                                                    SizedBox(width: gap),
+                                                    _tapImage(
+                                                      asset: massageStrength == 'LV3' ? 'assets/btn_massage_upper_focused.png' : 'assets/btn_massage_upper.png',
+                                                      size: size,
+                                                      onTap: () {strength.value = 'LV3';},
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+
+                                  Container(height: 1, color: Colors.white),
+
+                                  Expanded(
+                                    flex: 4,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: IntrinsicHeight(
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                                          children: [
+                                            const Expanded(flex: 1, child: SizedBox.shrink()),
+                                            const VerticalDivider(width: 1, thickness: 1, color: Colors.white),
+                                            Expanded(
+                                              flex: 2,
+                                              child: LayoutBuilder(
+                                                builder: (context, box) {
+                                                  final double h = box.maxHeight;
+                                                  final double w = box.maxWidth;
+                                                  final double size = math.min(w, h);
+
+                                                  return Stack(
+                                                    children: [
+                                                      Positioned(
+                                                        right: 10,
+                                                        bottom: 10,
+                                                        child: ValueListenableBuilder<bool>(
+                                                          valueListenable: CprLock.I.isLocked,
+                                                          builder: (context, locked, _) {
+                                                            return ValueListenableBuilder<bool>(
+                                                              valueListenable: activeMode,
+                                                              builder: (context, isStart, _) {
+                                                                return ValueListenableBuilder<bool>(
+                                                                  valueListenable: isPauseFocused,
+                                                                  builder: (context, pause, _) {
+                                                                    String asset;
+
+                                                                    if (locked) {
+                                                                      asset = isStart ? 'assets/btn_start_disabled.png' : 'assets/btn_stop_disabled.png';
+                                                                    } else if (isStart) {
+                                                                      asset = 'assets/btn_start.png';
+                                                                    } else {
+                                                                      asset = pause ? 'assets/btn_start.png' : 'assets/btn_stop.png';
+                                                                    }
+
+                                                                    return GestureDetector(
+                                                                      onTap: locked ? null : () async {
+                                                                        if (BleService.I.firstConnectedId == null) {
+                                                                          showCenterToast(context, "침대를 연결해주세요");
+                                                                          return;
+                                                                        }
+                                                                        if (isStart || isPauseFocused.value) {
+                                                                          activeMode.value = false;
+                                                                          mode = "마사지";
+                                                                          selectedMode.value = "MSG${massageIndex.value + 1}/${strength.value}";
+                                                                          if (isPauseFocused.value) {
+                                                                            isPauseFocused.value = false;
+                                                                          }
+                                                                          await BleService.I.sendToAllConnected(selectedMode.value.codeUnits);
+                                                                        } else {
+                                                                          activeMode.value = true;
+                                                                          isPauseFocused.value = false;
+                                                                          await BleService.I.sendToAllConnected('STOP'.codeUnits);
+                                                                          mode = '';
+                                                                          selectedMode.value = '';
+                                                                        }
+                                                                      },
+                                                                      child: SizedBox(
+                                                                        width: size,
+                                                                        height: size,
+                                                                        child: Image.asset(
+                                                                          asset,
+                                                                          fit: BoxFit.contain,
+                                                                          gaplessPlayback: true,
+                                                                        ),
+                                                                      ),
+                                                                    );
+                                                                  },
+                                                                );
+                                                              },
+                                                            );
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      );
-    });
+          );
+        }),
+      ),
+    );
   }
 }
 

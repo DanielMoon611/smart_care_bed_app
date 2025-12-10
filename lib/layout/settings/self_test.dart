@@ -59,6 +59,7 @@ class _SelfTestPageState extends State<SelfTestPage> {
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
+      key: globalMessengerKey,
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(

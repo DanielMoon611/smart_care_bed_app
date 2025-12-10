@@ -56,6 +56,7 @@ class _AlternatingPressurePageState extends State<AlternatingPressurePage> {
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
+      key: globalMessengerKey,
       child: Scaffold(
         backgroundColor: Colors.white,
         body: LayoutBuilder(
