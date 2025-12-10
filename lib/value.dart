@@ -36,6 +36,7 @@ final ValueNotifier<int> fanLevel = ValueNotifier<int>(0);
 final ValueNotifier<bool> isCprClicked = ValueNotifier<bool>(false);
 
 final ValueNotifier<bool> isToggleFocused = ValueNotifier<bool>(false);
+final ValueNotifier<bool> isTestStartStop = ValueNotifier<bool>(false);
 final GlobalKey<ScaffoldMessengerState> globalMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
 // --------------------

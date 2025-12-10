@@ -113,9 +113,14 @@ class _BleConnectPageState extends State<BleConnectPage> {
                     )
                   else
                     ElevatedButton(
-                      onPressed: () => svc.disconnect(h.remoteId),
+                      onPressed: () async {
+                        await svc.disconnect(h.remoteId);
+
+                        activeMode.value = true;
+                        isPauseFocused.value = false;
+                      },
                       child: const Text('연결끊기'),
-                    ),
+                    )
                 ],
               ),
             );

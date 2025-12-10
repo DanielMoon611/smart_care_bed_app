@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_care_bed_app/value.dart';
 import 'package:smart_care_bed_app/app/routes.dart';
 import 'package:smart_care_bed_app/network/ble_service.dart';
 
@@ -11,24 +12,19 @@ class SelfTestPage extends StatefulWidget {
 
 class _SelfTestPageState extends State<SelfTestPage> {
   final List<bool> _isSelected = List.generate(12, (_) => false);
-  int? _selectedButtonIndex;
-  bool _isRunning = false;
-  String _currentMode = ''; // 현재 모드 저장
   final ScrollController _scrollController = ScrollController();
-
-  /// 각 키(1~12)의 '마지막 수신 문자열'만 저장 (덮어쓰기)
   final Map<int, String> _sensorLast = {};
+  int? _selectedButtonIndex;
+  String _currentMode = '';
 
   @override
   void initState() {
     super.initState();
 
-    // ✅ BLE 수신 데이터 스트림 구독
     BleService.I.rxText$.listen((data) {
       if (!mounted) return;
       final decoded = data.trim();
 
-      // SENSOR/<key>/<csv> 형태만 처리 (센서 측정 모드일 때만)
       if (decoded.startsWith("SENSOR/") && _currentMode == 'S') {
         try {
           final parts = decoded.split('/');
@@ -37,7 +33,6 @@ class _SelfTestPageState extends State<SelfTestPage> {
           final csv = parts[2];
 
           if (key != null && key >= 1 && key <= 12) {
-            // 각 숫자를 5자리 고정폭으로 정렬
             final formatted = csv
                 .split(',')
                 .map((s) => s.trim())
@@ -50,8 +45,7 @@ class _SelfTestPageState extends State<SelfTestPage> {
 
             Future.delayed(const Duration(milliseconds: 100), () {
               if (_scrollController.hasClients) {
-                _scrollController
-                    .jumpTo(_scrollController.position.maxScrollExtent);
+                _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
               }
             });
           }
@@ -88,7 +82,6 @@ class _SelfTestPageState extends State<SelfTestPage> {
                     _buildSectionDivider("건반"),
                     const SizedBox(height: 16),
 
-                    // ✅ 상단 정사각형 12개
                     GridView.count(
                       crossAxisCount: 6,
                       shrinkWrap: true,
@@ -97,7 +90,7 @@ class _SelfTestPageState extends State<SelfTestPage> {
                       mainAxisSpacing: 8,
                       children: List.generate(12, (index) {
                         final bool selected = _isSelected[index];
-                        final bool isDisabled = _isRunning;
+                        final bool isDisabled = isTestStartStop.value;
 
                         return GestureDetector(
                           onTap: () {
@@ -112,9 +105,7 @@ class _SelfTestPageState extends State<SelfTestPage> {
                               color: selected ? Colors.blue[800] : Colors.blue[200],
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: selected
-                                    ? Colors.blue[900]!
-                                    : Colors.grey.shade400,
+                                color: selected ? Colors.blue[900]! : Colors.grey.shade400,
                                 width: selected ? 2.0 : 1.0,
                               ),
                             ),
@@ -137,7 +128,7 @@ class _SelfTestPageState extends State<SelfTestPage> {
                     _buildSectionDivider("모드"),
                     const SizedBox(height: 16),
 
-                    // ✅ 모드 버튼 4개
+                    // 모드 버튼 4개
                     GridView.count(
                       crossAxisCount: 2,
                       shrinkWrap: true,
@@ -158,7 +149,7 @@ class _SelfTestPageState extends State<SelfTestPage> {
 
                     const SizedBox(height: 24),
 
-                    // ✅ 시작 / 정지 버튼 단독 배치
+                    // 시작 / 정지 버튼
                     SizedBox(
                       width: double.infinity,
                       height: 60,
@@ -167,9 +158,9 @@ class _SelfTestPageState extends State<SelfTestPage> {
 
                     const SizedBox(height: 16),
 
-                    // ✅ 센서값 표시 영역 (1~12 고정 라인, 전체 가로 스크롤 정상 작동)
+                    // 센서값 표시 영역
                     Container(
-                      height: 300, // 🔹 12줄 표시 높이로 조정
+                      height: 300,
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -181,7 +172,7 @@ class _SelfTestPageState extends State<SelfTestPage> {
                         controller: _scrollController,
                         thumbVisibility: true,
                         child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal, // ✅ 전체 가로 스크롤
+                          scrollDirection: Axis.horizontal,
                           child: SingleChildScrollView(
                             controller: _scrollController,
                             child: Column(
@@ -207,7 +198,6 @@ class _SelfTestPageState extends State<SelfTestPage> {
 
                     const SizedBox(height: 8),
 
-                    // ✅ 텍스트 박스 클리어 버튼
                     Align(
                       alignment: Alignment.centerRight,
                       child: OutlinedButton.icon(
@@ -215,14 +205,13 @@ class _SelfTestPageState extends State<SelfTestPage> {
                         label: const Text('Clear'),
                         onPressed: () {
                           setState(() {
-                            _sensorLast.clear(); // 데이터만 초기화
+                            _sensorLast.clear();
                           });
 
                           if (_scrollController.hasClients) {
-                            _scrollController.jumpTo(0); // 스크롤 맨 위로
+                            _scrollController.jumpTo(0);
                           }
 
-                          // ✅ Snackbar 사용 (기존 _showSnackBar로)
                           _showSnackBar(context, '센서 표시를 초기화했습니다.');
                         },
                       ),
@@ -239,7 +228,7 @@ class _SelfTestPageState extends State<SelfTestPage> {
     );
   }
 
-  /// ✅ 구분선 위젯
+  /// 구분선 위젯
   Widget _buildSectionDivider(String title) {
     return Row(
       children: [
@@ -260,39 +249,50 @@ class _SelfTestPageState extends State<SelfTestPage> {
     );
   }
 
-  /// ✅ 제어 버튼
+  /// 제어 버튼
   Widget _buildControlButton(BuildContext context, int index, String label) {
     final bool selected = _selectedButtonIndex == index;
-    final bool isRedButton = label == '시작 / 정지';
+    final bool isStartStopButton = index == 4;
 
-    final Color? baseColor = isRedButton ? Colors.red[300] : Colors.blue[200];
-    final Color? selectedColor = isRedButton ? Colors.red[800] : Colors.blue[800];
-    final Color borderColor = isRedButton
-        ? (selected ? Colors.red[900]! : Colors.red[400]!)
-        : (selected ? Colors.blue[900]! : Colors.grey.shade400);
+    // 버튼 텍스트 ("시작" / "정지")
+    final String dynamicLabel = isStartStopButton ? (isTestStartStop.value ? '정지' : '시작') : label;
 
-    final bool isDisabled =
-        _isRunning && !isRedButton && !_isSelectedControl(index);
+    // 색상 정의
+    Color baseColor;
+    Color borderColor;
+
+    if (isStartStopButton) {
+      // 시작: 파랑 / 정지: 빨강
+      if (!isTestStartStop.value) {
+        baseColor = Colors.blue[800]!;
+        borderColor = Colors.blue[900]!;
+      } else {
+        baseColor = Colors.red[800]!;
+        borderColor = Colors.red[900]!;
+      }
+    } else {
+      // 모드 버튼: 선택 파랑, 미선택 연파랑
+      baseColor = selected ? Colors.blue[800]! : Colors.blue[200]!;
+      borderColor = selected ? Colors.blue[900]! : Colors.grey.shade400;
+    }
+
+    final bool isDisabled = isTestStartStop.value && !isStartStopButton && !_isSelectedControl(index);
 
     return GestureDetector(
       onTap: () async {
         if (isDisabled) return;
 
-        // ✅ "시작 / 정지" 버튼 처리 (토글)
-        if (isRedButton) {
+        // Start / Stop 버튼 동작
+        if (isStartStopButton) {
           final bool hasKeyboardSelected = _isSelected.contains(true);
-          final bool hasModeSelected =
-              _selectedButtonIndex != null && _selectedButtonIndex! < 4;
+          final bool hasModeSelected = _selectedButtonIndex != null && _selectedButtonIndex! < 4;
 
-          if (!_isRunning) {
-            // ▶️ 시작
-            if (!hasKeyboardSelected && !hasModeSelected) {
+          if (!isTestStartStop.value) {
+            if (!hasKeyboardSelected) {
               _showSnackBar(context, "건반 선택");
               return;
-            } else if (!hasKeyboardSelected) {
-              _showSnackBar(context, "건반 선택");
-              return;
-            } else if (!hasModeSelected) {
+            }
+            if (!hasModeSelected) {
               _showSnackBar(context, "모드 선택");
               return;
             }
@@ -312,17 +312,14 @@ class _SelfTestPageState extends State<SelfTestPage> {
 
             final sendData = 'TEST/$key/$mode';
             await BleService.I.sendToAllConnected(sendData.codeUnits);
-            debugPrint('▶️ 시작 전송됨 → $sendData');
 
-            setState(() => _isRunning = true);
+            setState(() => isTestStartStop.value = true);
           } else {
-            // ⏹ 정지
             const stopData = 'PAUSE';
             await BleService.I.sendToAllConnected(stopData.codeUnits);
-            debugPrint('⏹ 정지 전송됨 → $stopData');
 
             setState(() {
-              _isRunning = false;
+              isTestStartStop.value = false;
               _selectedButtonIndex = null;
               _currentMode = '';
             });
@@ -330,7 +327,7 @@ class _SelfTestPageState extends State<SelfTestPage> {
           return;
         }
 
-        // 🔵 일반 버튼
+        // 모드 버튼 선택/해제
         setState(() {
           _selectedButtonIndex = (_selectedButtonIndex == index) ? null : index;
         });
@@ -338,9 +335,7 @@ class _SelfTestPageState extends State<SelfTestPage> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          color: isDisabled
-              ? Colors.grey[400]
-              : (selected ? selectedColor : baseColor),
+          color: isDisabled ? Colors.grey[400] : baseColor,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isDisabled ? Colors.grey : borderColor,
@@ -349,13 +344,13 @@ class _SelfTestPageState extends State<SelfTestPage> {
         ),
         child: Center(
           child: Text(
-            label,
+            dynamicLabel,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: isDisabled
-                  ? Colors.grey.shade700
-                  : (selected ? Colors.white : Colors.black87),
+
+              // ⭐ 변경된 부분: 선택 시 흰색 / 미선택 시 검정
+              color: isStartStopButton ? Colors.white : (selected ? Colors.white : Colors.black87),
             ),
           ),
         ),
@@ -376,6 +371,5 @@ class _SelfTestPageState extends State<SelfTestPage> {
       );
   }
 
-  bool _isSelectedControl(int index) =>
-      _selectedButtonIndex == index && _selectedButtonIndex! < 4;
+  bool _isSelectedControl(int index) => _selectedButtonIndex == index && _selectedButtonIndex! < 4;
 }
