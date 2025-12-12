@@ -68,6 +68,19 @@ class _SelfTestPageState extends State<SelfTestPage> {
             icon: const Icon(Icons.arrow_back),
             tooltip: '설정으로',
             onPressed: () {
+              if (isTestStartStop.value) {
+                final m = globalMessengerKey.currentState;
+                m?.hideCurrentSnackBar();
+                m?.showSnackBar(
+                  const SnackBar(
+                    content: Text("TEST 중에는 설정으로 돌아갈 수 없습니다.", textAlign: TextAlign.center),
+                    duration: Duration(seconds: 2),
+                    behavior: SnackBarBehavior.floating,
+                    margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  ),
+                );
+                return;
+              }
               Navigator.of(context).pushReplacementNamed(AppRoutes.setup);
             },
           ),

@@ -60,18 +60,12 @@ class _ControlPanelState extends State<ControlPanel> {
   }
 
   void _goto(BuildContext context, String routeName) {
-    // if (isToggleFocused.value) {
-    // //   showCenterToast(context, "이동 모드를 종료해주세요(현재 동작중인 버튼 다시 눌러 정지)");
-    //   showCenterToast(context, "TryMovePageWhileLeRiException()");
-    //   return;
-    // }
     if (isToggleFocused.value) {
       final m = globalMessengerKey.currentState;
       m?.hideCurrentSnackBar();
       m?.showSnackBar(
         const SnackBar(
-          // content: Text("이동 모드를 종료해주세요(현재 동작중인 버튼 다시 눌러 정지)"),
-          content: Text("TryMovePageWhileLeRiException()"),
+          content: Text("이동 모드를 종료해주세요(현재 동작중인 버튼 다시 눌러 정지)"),
           duration: Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -80,19 +74,12 @@ class _ControlPanelState extends State<ControlPanel> {
       return;
     }
 
-    // // 스낵바 안나와서 임시 조치
-    // if (isTestStartStop.value) {
-    //   // showCenterToast(context, "자가테스트 모드를 종료해주세요");
-    //   showCenterToast(context, "TryMovePageWhileSelfTestException()");
-    //   return;
-    // }
     if (isTestStartStop.value) {
       final m = globalMessengerKey.currentState;
       m?.hideCurrentSnackBar();
       m?.showSnackBar(
         const SnackBar(
-          // content: Text("자가테스트 모드를 종료해주세요"),
-          content: Text("TryMovePageWhileSelfTestException()"),
+          content: Text("자가테스트 모드를 종료해주세요"),
           duration: Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -107,60 +94,22 @@ class _ControlPanelState extends State<ControlPanel> {
   }
 
   void _action() async {
-    // 스낵바 안나와서 임시 조치
     if (BleService.I.firstConnectedId == null) {
-      // showCenterToast(context, "침대를 연결해주세요");
-      showCenterToast(context, "BedNotConnectedException()");
+      showCenterToast(context, "침대를 연결해주세요");
       return;
     }
-    // if (BleService.I.firstConnectedId == null) {
-    //   final m = globalMessengerKey.currentState;
-    //   m?.hideCurrentSnackBar();
-    //   m?.showSnackBar(
-    //     const SnackBar(
-    //       // content: Text("침대를 연결해주세요"),
-    //       content: Text("BedNotConnectedException()"),
-    //       duration: Duration(seconds: 2),
-    //       behavior: SnackBarBehavior.floating,
-    //       margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
-    //     ),
-    //   );
-    //   return;
-    // }
 
-    // 스낵바 안나와서 임시 조치
     if (!isTestStartStop.value && mode.isEmpty) {
-      // showCenterToast(context, "모드를 선택해주세요");
-      showCenterToast(context, "SelectModeException()");
+      showCenterToast(context, "모드를 선택해주세요");
       return;
     }
-    // if (mode.isEmpty) {
-    //   final m = globalMessengerKey.currentState;
-    //   m?.hideCurrentSnackBar();
-    //   m?.showSnackBar(
-    //     const SnackBar(
-    //       // content: Text("모드를 선택해주세요"),
-    //       content: Text("SelectModeException()"),
-    //       duration: Duration(seconds: 2),
-    //       behavior: SnackBarBehavior.floating,
-    //       margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
-    //     ),
-    //   );
-    //   return;
-    // }
 
-    // if (isToggleFocused.value) {
-    // //   showCenterToast(context, "이동 모드를 종료해주세요(현재 동작중인 버튼 다시 눌러 정지)");
-    //   showCenterToast(context, "TryPauseWhileLeRiException()");
-    //   return;
-    // }
     if (isToggleFocused.value) {
       final m = globalMessengerKey.currentState;
       m?.hideCurrentSnackBar();
       m?.showSnackBar(
         const SnackBar(
-          // content: Text("이동 모드를 종료해주세요(현재 동작중인 버튼 다시 눌러 정지)"),
-          content: Text("TryPauseWhileLeRiException()"),
+          content: Text("이동 모드를 종료해주세요(현재 동작중인 버튼 다시 눌러 정지)"),
           duration: Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -169,19 +118,12 @@ class _ControlPanelState extends State<ControlPanel> {
       return;
     }
 
-    // // 스낵바 안나와서 임시 조치
-    // if (isTestStartStop.value && mode.isEmpty) {
-    // // showCenterToast(context, "자가테스트 모드를 종료해주세요");
-    // showCenterToast(context, "TryPauseWhileSelfTestException()");
-    //   return;
-    // }
     if (isTestStartStop.value && mode.isEmpty || isTestStartStop.value && mode.isNotEmpty) {
       final m = globalMessengerKey.currentState;
       m?.hideCurrentSnackBar();
       m?.showSnackBar(
         const SnackBar(
-          // content: Text("자가테스트 모드를 종료해주세요"),
-          content: Text("TryPauseWhileSelfTestException()"),
+          content: Text("자가테스트 모드를 종료해주세요"),
           duration: Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -203,95 +145,40 @@ class _ControlPanelState extends State<ControlPanel> {
     } catch (e) {
       isPauseFocused.value = oldValue;
       if (!mounted) return;
-      // showCenterToast(context, "침대를 연결해주세요");
     }
   }
 
   void _heat() async {
-    // 스낵바 안나와서 임시 조치
     if (BleService.I.firstConnectedId == null) {
-      // showCenterToast(context, "침대를 연결해주세요");
-      showCenterToast(context, "BedNotConnectedException()");
+      showCenterToast(context, "침대를 연결해주세요");
       return;
     }
-    // if (BleService.I.firstConnectedId == null) {
-    //   final m = globalMessengerKey.currentState;
-    //   m?.hideCurrentSnackBar();
-    //   m?.showSnackBar(
-    //     const SnackBar(
-    //       // content: Text("침대를 연결해주세요"),
-    //       content: Text("BedNotConnectedException()"),
-    //       duration: Duration(seconds: 2),
-    //       behavior: SnackBarBehavior.floating,
-    //       margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
-    //     ),
-    //   );
-    //   return;
-    // }
     heatLevel.value = (heatLevel.value + 1) % 4;
     debugPrint('${heatLevel.value}');
     await BleService.I.sendToAllConnected("H${heatLevel.value}".codeUnits);
   }
 
   void _fan() async {
-    // 스낵바 안나와서 임시 조치
     if (BleService.I.firstConnectedId == null) {
-      // showCenterToast(context, "침대를 연결해주세요");
-      showCenterToast(context, "BedNotConnectedException()");
+      showCenterToast(context, "침대를 연결해주세요");
       return;
     }
-    // if (BleService.I.firstConnectedId == null) {
-    //   final m = globalMessengerKey.currentState;
-    //   m?.hideCurrentSnackBar();
-    //   m?.showSnackBar(
-    //     const SnackBar(
-    //       // content: Text("침대를 연결해주세요"),
-    //       content: Text("BedNotConnectedException()"),
-    //       duration: Duration(seconds: 2),
-    //       behavior: SnackBarBehavior.floating,
-    //       margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
-    //     ),
-    //   );
-    //   return;
-    // }
     fanLevel.value = (fanLevel.value + 1) % 4;
     await BleService.I.sendToAllConnected("F${fanLevel.value}".codeUnits);
   }
 
   void _cpr() async {
-    // 스낵바 안나와서 임시 조치
     if (BleService.I.firstConnectedId == null) {
-      // showCenterToast(context, "침대를 연결해주세요");
-      showCenterToast(context, "BedNotConnectedException()");
+      showCenterToast(context, "침대를 연결해주세요");
       return;
     }
-    // if (BleService.I.firstConnectedId == null) {
-    //   final m = globalMessengerKey.currentState;
-    //   m?.hideCurrentSnackBar();
-    //   m?.showSnackBar(
-    //     const SnackBar(
-    //       // content: Text("침대를 연결해주세요"),
-    //       content: Text("BedNotConnectedException()"),
-    //       duration: Duration(seconds: 2),
-    //       behavior: SnackBarBehavior.floating,
-    //       margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
-    //     ),
-    //   );
-    //   return;
-    // }
 
-    // if (isToggleFocused.value) {
-    // //   showCenterToast(context, "이동 모드를 종료해주세요(현재 동작중인 버튼 다시 눌러 정지)");
-    //   showCenterToast(context, "TryInitWhileLeRiException()");
-    //   return;
-    // }
     if (isToggleFocused.value) {
       final m = globalMessengerKey.currentState;
       m?.hideCurrentSnackBar();
       m?.showSnackBar(
         const SnackBar(
-          // content: Text("이동 모드를 종료해주세요(현재 동작중인 버튼 다시 눌러 정지)"),
-          content: Text("TryInitWhileLeRiException()"),
+          content: Text("이동 모드를 종료해주세요(현재 동작중인 버튼 다시 눌러 정지)"),
           duration: Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -300,18 +187,12 @@ class _ControlPanelState extends State<ControlPanel> {
       return;
     }
 
-    // if (activeMode.value == false && isPauseFocused.value == false) {
-    //   // showCenterToast(context, "모드를 종료해주세요");
-    //   showCenterToast(context, "TryInitWhileModeRunningException()");
-    //   return;
-    // }
     if (activeMode.value == false && isPauseFocused.value == false) {
       final m = globalMessengerKey.currentState;
       m?.hideCurrentSnackBar();
       m?.showSnackBar(
         const SnackBar(
-          // content: Text("모드 동작 중 비활성화됨"),
-          content: Text("TryInitWhileModeRunningException()"),
+          content: Text("동작 중인 모드를 종료/정지해주세요"),
           duration: Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -320,19 +201,12 @@ class _ControlPanelState extends State<ControlPanel> {
       return;
     }
 
-    // // 스낵바 안나와서 임시 조치
-    // if (isTestStartStop.value) {
-    //   // showCenterToast(context, "자가테스트 모드를 종료해주세요");
-    //   showCenterToast(context, "TryInitWhileSelfTestException()");
-    //   return;
-    // }
     if (isTestStartStop.value) {
       final m = globalMessengerKey.currentState;
       m?.hideCurrentSnackBar();
       m?.showSnackBar(
         const SnackBar(
-          // content: Text("자가테스트 모드를 종료해주세요"),
-          content: Text("TryInitWhileSelfTestException()"),
+          content: Text("자가테스트 모드를 종료해주세요"),
           duration: Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.fromLTRB(12, 0, 12, 12),
