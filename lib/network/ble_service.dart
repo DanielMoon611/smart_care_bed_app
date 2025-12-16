@@ -90,11 +90,9 @@ class BleService extends ChangeNotifier {
   bool _scanning = false;
   Timer? _pruneTimer;
   Timer? _debounce;
-  String? get firstConnectedId =>
-      _sessions.isEmpty ? null : _sessions.keys.first;
+  String? get firstConnectedId => _sessions.isEmpty ? null : _sessions.keys.first;
 
-  final StreamController<String> _rxTextCtrl =
-      StreamController<String>.broadcast(sync: true);
+  final StreamController<String> _rxTextCtrl = StreamController<String>.broadcast(sync: true);
   Stream<String> get rxText$ => _rxTextCtrl.stream;
 
   bool get isScanning => _scanning;

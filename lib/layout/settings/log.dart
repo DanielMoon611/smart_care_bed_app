@@ -13,8 +13,13 @@ class LogPage extends StatefulWidget {
 class _LogPageState extends State<LogPage> {
   final svc = BleService.I;
   StreamSubscription<String>? _rxSub;
-  final _lines = <String>[];
-  String _last = '';
+
+  final List<String> _lines = [];
+
+  final ScrollController _scrollCtrl = ScrollController();
+
+  // 🔴 사용자가 현재 하단에 있는지 여부
+  bool _isAtBottom = true;
 
   static bool _isLikelyText(String s) {
     if (s.isEmpty) return false;
@@ -24,20 +29,43 @@ class _LogPageState extends State<LogPage> {
     return r.hasMatch(s);
   }
 
+  void _scrollToBottom() {
+    if (!_scrollCtrl.hasClients) return;
+    _scrollCtrl.jumpTo(_scrollCtrl.position.maxScrollExtent);
+  }
+
+  void _onScroll() {
+    if (!_scrollCtrl.hasClients) return;
+
+    final position = _scrollCtrl.position;
+    const threshold = 40.0; // 하단 판정 여유값(px)
+
+    _isAtBottom =
+        position.pixels >= position.maxScrollExtent - threshold;
+  }
+
   @override
   void initState() {
     super.initState();
+
+    _scrollCtrl.addListener(_onScroll);
+
     _rxSub = svc.rxText$.listen((text) {
       if (!mounted) return;
-      final decoded = text;
-      if (_isLikelyText(decoded)) {
+      if (_isLikelyText(text)) {
         setState(() {
-          _last = decoded.trimRight();
-          _lines.add(_last);
+          _lines.add(text.trimRight());
           if (_lines.length > 500) {
             _lines.removeRange(0, _lines.length - 500);
           }
         });
+
+        // 🔴 하단에 있을 때만 자동 스크롤
+        if (_isAtBottom) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _scrollToBottom();
+          });
+        }
       }
     });
   }
@@ -45,6 +73,8 @@ class _LogPageState extends State<LogPage> {
   @override
   void dispose() {
     _rxSub?.cancel();
+    _scrollCtrl.removeListener(_onScroll);
+    _scrollCtrl.dispose();
     super.dispose();
   }
 
@@ -57,7 +87,8 @@ class _LogPageState extends State<LogPage> {
           icon: const Icon(Icons.arrow_back),
           tooltip: '설정으로',
           onPressed: () {
-            Navigator.of(context).pushReplacementNamed(AppRoutes.setup);
+            Navigator.of(context)
+                .pushReplacementNamed(AppRoutes.setup);
           },
         ),
         title: const Text('로그'),
@@ -67,29 +98,24 @@ class _LogPageState extends State<LogPage> {
             icon: const Icon(Icons.delete_sweep),
             onPressed: () => setState(() {
               _lines.clear();
-              _last = '';
             }),
           ),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(28),
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(
-              _last.isEmpty ? ' ' : _last,
-              style: const TextStyle(fontSize: 12, color: Colors.white70),
+      ),
+      body: _lines.isEmpty
+          ? const Center(child: Text('수신 로그가 없습니다.'))
+          : ListView.builder(
+              controller: _scrollCtrl,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: _lines.length,
+              itemBuilder: (_, i) => Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                child: Text(_lines[i]),
+              ),
             ),
-          ),
-        ),
-      ),
-      body: _lines.isEmpty ? const Center(child: Text('수신 로그가 없습니다.')) : ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: _lines.length,
-        itemBuilder: (_, i) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          child: Text(_lines[i]),
-        ),
-      ),
     );
   }
 }
