@@ -335,6 +335,7 @@ class _BodyPressureDistributionPageState extends State<BodyPressureDistributionP
                                                                       activeMode.value = true;
                                                                       isPauseFocused.value = false;
                                                                       await BleService.I.sendToAllConnected('STOP'.codeUnits);
+                                                                      CprLock.I.lockFor(const Duration(seconds: 15));
                                                                       mode = '';
                                                                     }
                                                                   },

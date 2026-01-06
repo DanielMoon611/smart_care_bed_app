@@ -308,6 +308,7 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                                                 //   await BleService.I.sendToAllConnected('STOP'.codeUnits);
                                                                                 // }
                                                                                 await BleService.I.sendToAllConnected('STOP'.codeUnits);
+                                                                                CprLock.I.lockFor(const Duration(seconds: 15));
                                                                                 mode = '';
                                                                               }
                                                                             },

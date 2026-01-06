@@ -326,6 +326,7 @@ class _MassagePage extends State<MassagePage> {
                                                                           activeMode.value = true;
                                                                           isPauseFocused.value = false;
                                                                           await BleService.I.sendToAllConnected('STOP'.codeUnits);
+                                                                          CprLock.I.lockFor(const Duration(seconds: 15));
                                                                           mode = '';
                                                                           selectedMode.value = '';
                                                                         }
