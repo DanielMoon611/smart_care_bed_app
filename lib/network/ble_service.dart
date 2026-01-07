@@ -75,15 +75,14 @@ String? parseStableId(List<int> d) {
 }
 
 class BleService extends ChangeNotifier {
-  BleService._();
-  static final BleService I = BleService._();
-
+  BleService._(); static final BleService I = BleService._();
   Iterable<String> get connectedIds => _sessions.keys;
 
   final Map<String, Hit> _hits = {};
   final Map<String, DeviceSession> _sessions = {};
-  final List<String> _order = [];
   final Map<String, String> _aliasByRemote = {};
+  final List<String> _order = [];
+  final StreamController<String> _rxTextCtrl = StreamController<String>.broadcast(sync: true);
 
   StreamSubscription<List<ScanResult>>? _scanSub;
   int _scanSessionCounter = 0;
@@ -92,10 +91,9 @@ class BleService extends ChangeNotifier {
   Timer? _debounce;
   String? get firstConnectedId => _sessions.isEmpty ? null : _sessions.keys.first;
 
-  final StreamController<String> _rxTextCtrl = StreamController<String>.broadcast(sync: true);
-  Stream<String> get rxText$ => _rxTextCtrl.stream;
-
   bool get isScanning => _scanning;
+  bool isConnected(String remoteId) => _sessions.containsKey(remoteId);
+  Stream<String> get rxText$ => _rxTextCtrl.stream;
 
   List<Hit> get items {
     final now = DateTime.now();
@@ -108,8 +106,6 @@ class BleService extends ChangeNotifier {
     }).toList();
     return keys.map((k) => _hits[k]!).toList();
   }
-
-  bool isConnected(String remoteId) => _sessions.containsKey(remoteId);
 
   Future<void> _waitForBluetoothOn() async {
     final currentState = await FlutterBluePlus.adapterState.first;
@@ -202,9 +198,7 @@ class BleService extends ChangeNotifier {
 
         if (m.containsKey(kManufacturerId)) {
           final raw = m[kManufacturerId]!;
-          final Uint8List bytes = raw is Uint8List
-              ? raw
-              : Uint8List.fromList(List<int>.from(raw));
+          final Uint8List bytes = raw is Uint8List ? raw : Uint8List.fromList(List<int>.from(raw));
           stableIdHex = parseStableId(bytes);
           seq = parseSmartCareSeq(bytes);
           matchByMfg = (stableIdHex != null) || (seq != null);
@@ -417,26 +411,15 @@ class BleService extends ChangeNotifier {
     }
   }
 
-  Future<void> send(
-    String remoteId,
-    List<int> bytes, {
-    bool withoutResponse = true,
-  }) async {
-    final sess = _sessions[remoteId];
-    if (sess == null) throw StateError('연결되지 않았습니다.');
-    await sess.rx.write(bytes, withoutResponse: withoutResponse);
-  }
-
-  Future<void> sendToAllConnected(
+  Future<void> sendToCommand(
     List<int> bytes, {
     bool withoutResponse = true,
   }) async {
     if (_sessions.isEmpty) {
       throw StateError('연결된 BLE 디바이스가 없습니다.');
     }
-    for (final id in _sessions.keys) {
-      await send(id, bytes, withoutResponse: withoutResponse);
-    }
+    final sess = _sessions.values.first;
+    await sess.rx.write(bytes, withoutResponse: withoutResponse);
   }
 
   Future<void> shutdown() async {

@@ -325,12 +325,12 @@ class _SelfTestPageState extends State<SelfTestPage> {
             _currentMode = mode;
 
             final sendData = 'TEST/$key/$mode';
-            await BleService.I.sendToAllConnected(sendData.codeUnits);
+            await BleService.I.sendToCommand(sendData.codeUnits);
 
             setState(() => isTestStartStop.value = true);
           } else {
             const stopData = 'PAUSE';
-            await BleService.I.sendToAllConnected(stopData.codeUnits);
+            await BleService.I.sendToCommand(stopData.codeUnits);
 
             setState(() {
               isTestStartStop.value = false;

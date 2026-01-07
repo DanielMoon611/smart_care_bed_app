@@ -137,9 +137,9 @@ class _ControlPanelState extends State<ControlPanel> {
 
     try {
       if (isPauseFocused.value) {
-        await BleService.I.sendToAllConnected('PAUSE'.codeUnits);
+        await BleService.I.sendToCommand('PAUSE'.codeUnits);
       } else {
-        await BleService.I.sendToAllConnected(selectedMode.value.codeUnits);
+        await BleService.I.sendToCommand(selectedMode.value.codeUnits);
         activeMode.value = false;
       }
     } catch (e) {
@@ -155,7 +155,7 @@ class _ControlPanelState extends State<ControlPanel> {
     }
     heatLevel.value = (heatLevel.value + 1) % 4;
     debugPrint('${heatLevel.value}');
-    await BleService.I.sendToAllConnected("H${heatLevel.value}".codeUnits);
+    await BleService.I.sendToCommand("H${heatLevel.value}".codeUnits);
   }
 
   void _fan() async {
@@ -164,7 +164,7 @@ class _ControlPanelState extends State<ControlPanel> {
       return;
     }
     fanLevel.value = (fanLevel.value + 1) % 4;
-    await BleService.I.sendToAllConnected("F${fanLevel.value}".codeUnits);
+    await BleService.I.sendToCommand("F${fanLevel.value}".codeUnits);
   }
 
   void _cpr() async {
@@ -215,7 +215,7 @@ class _ControlPanelState extends State<ControlPanel> {
       return;
     }
 
-    await BleService.I.sendToAllConnected('INIT'.codeUnits);
+    await BleService.I.sendToCommand('INIT'.codeUnits);
     isCprClicked.value = true;
     CprLock.I.lockFor(const Duration(seconds: 10));
 

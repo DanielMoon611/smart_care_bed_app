@@ -375,11 +375,11 @@ class _AlternatingPressurePageState extends State<AlternatingPressurePage> {
                                                                           if (isPauseFocused.value) {
                                                                             isPauseFocused.value = false;
                                                                           }
-                                                                          await BleService.I.sendToAllConnected(command.codeUnits);
+                                                                          await BleService.I.sendToCommand(command.codeUnits);
                                                                         } else {
                                                                           activeMode.value = true;
                                                                           isPauseFocused.value = false;
-                                                                          await BleService.I.sendToAllConnected('STOP'.codeUnits);
+                                                                          await BleService.I.sendToCommand('STOP'.codeUnits);
                                                                           CprLock.I.lockFor(const Duration(seconds: 15));
                                                                           mode = '';
                                                                         }

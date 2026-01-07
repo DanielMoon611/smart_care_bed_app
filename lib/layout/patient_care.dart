@@ -298,7 +298,7 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                                                 if (isPauseFocused.value) {
                                                                                   isPauseFocused.value = false;
                                                                                 }
-                                                                                await BleService.I.sendToAllConnected(selectedMode.value.codeUnits);
+                                                                                await BleService.I.sendToCommand(selectedMode.value.codeUnits);
                                                                               } else {
                                                                                 activeMode.value = true;
                                                                                 isPauseFocused.value = false;
@@ -307,7 +307,7 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                                                 // } else {
                                                                                 //   await BleService.I.sendToAllConnected('STOP'.codeUnits);
                                                                                 // }
-                                                                                await BleService.I.sendToAllConnected('STOP'.codeUnits);
+                                                                                await BleService.I.sendToCommand('STOP'.codeUnits);
                                                                                 CprLock.I.lockFor(const Duration(seconds: 15));
                                                                                 mode = '';
                                                                               }
@@ -389,12 +389,12 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                                   mode = '돌봄';
                                                                   toggleSelection.value = 'left';
                                                                   debugPrint("Left ON");
-                                                                  await BleService.I.sendToAllConnected("LEFT".codeUnits);
+                                                                  await BleService.I.sendToCommand("LEFT".codeUnits);
                                                                 } else if (isFocused) {
                                                                   toggleSelection.value = null;
                                                                   debugPrint("Left OFF");
                                                                   // await BleService.I.sendToAllConnected("PAUSE".codeUnits);
-                                                                  await BleService.I.sendToAllConnected('STOP'.codeUnits);
+                                                                  await BleService.I.sendToCommand('STOP'.codeUnits);
                                                                   mode = '';
                                                                 }
                                                               },
@@ -451,11 +451,11 @@ class _PatientCarePage extends State<PatientCarePage> {
                                                                 if (selected == null) {
                                                                   mode = '돌봄';
                                                                   toggleSelection.value = 'right';
-                                                                  await BleService.I.sendToAllConnected("RIGHT".codeUnits);
+                                                                  await BleService.I.sendToCommand("RIGHT".codeUnits);
                                                                 } else if (isFocused) {
                                                                   toggleSelection.value = null;
                                                                   // await BleService.I.sendToAllConnected("PAUSE".codeUnits);
-                                                                  await BleService.I.sendToAllConnected('STOP'.codeUnits);
+                                                                  await BleService.I.sendToCommand('STOP'.codeUnits);
                                                                   mode = '';
                                                                 }
                                                               },
