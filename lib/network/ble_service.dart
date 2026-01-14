@@ -320,10 +320,21 @@ class BleService extends ChangeNotifier {
   }
 
   Future<void> connect(String remoteId) async {
+    // ✅ 1:1 통신 제약 강화
     if (_sessions.isNotEmpty) {
-      throw Exception('이미 연결된 장치가 있습니다. 먼저 연결을 끊어주세요.');
+      final connectedId = _sessions.keys.first;
+      throw Exception(
+        '이미 다른 기기와 연결되어 있습니다.\n'
+        '먼저 현재 연결을 끊어주세요.\n'
+        '(현재 연결: ${_hits[connectedId]?.name ?? connectedId})'
+      );
     }
-    if (_sessions.containsKey(remoteId)) return;
+
+    // ✅ 중복 연결 방지
+    if (_sessions.containsKey(remoteId)) {
+      debugPrint('⚠️ 이미 연결된 기기입니다: $remoteId');
+      return;
+    }
     try {
       await _waitForBluetoothOn();
       await FlutterBluePlus.stopScan();
@@ -377,6 +388,7 @@ class BleService extends ChangeNotifier {
 
       final connSub = dev.connectionState.listen((s) async {
         if (s == BluetoothConnectionState.disconnected) {
+          debugPrint('🔌 연결 끊김 감지: $remoteId');
           await _disposeSession(remoteId);
           notifyListeners();
         }
@@ -395,11 +407,16 @@ class BleService extends ChangeNotifier {
         hit.lastSeen = DateTime.now();
       } catch (_) {}
 
+      debugPrint('✅ 연결 성공: $remoteId');
       notifyListeners();
-    } finally {}
+    } catch (e) {
+      debugPrint('❌ 연결 실패: $e');
+      rethrow;
+    }
   }
 
   Future<void> disconnect(String remoteId) async {
+    debugPrint('🔌 연결 해제 시도: $remoteId');
     await _disposeSession(remoteId);
     notifyListeners();
   }
@@ -407,6 +424,7 @@ class BleService extends ChangeNotifier {
   Future<void> _disposeSession(String remoteId) async {
     final sess = _sessions.remove(remoteId);
     if (sess != null) {
+      debugPrint('🗑️ 세션 정리 중: $remoteId');
       await sess.dispose();
     }
   }
@@ -418,11 +436,17 @@ class BleService extends ChangeNotifier {
     if (_sessions.isEmpty) {
       throw StateError('연결된 BLE 디바이스가 없습니다.');
     }
+  
+    if (_sessions.length > 1) {
+      // 이론상 발생하면 안 되지만 안전장치
+      throw StateError('비정상: 여러 기기가 연결되어 있습니다. 앱을 재시작하세요.');
+    }
     final sess = _sessions.values.first;
     await sess.rx.write(bytes, withoutResponse: withoutResponse);
   }
 
   Future<void> shutdown() async {
+    debugPrint('🛑 BLE 서비스 종료 중...');
     await stopScan();
     _pruneTimer?.cancel();
     _debounce?.cancel();
@@ -432,5 +456,6 @@ class BleService extends ChangeNotifier {
       await _disposeSession(id);
     }
     await _rxTextCtrl.close();
+    debugPrint('✅ BLE 서비스 종료 완료');
   }
 }
