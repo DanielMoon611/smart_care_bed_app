@@ -6,6 +6,13 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:smart_care_bed_app/value.dart';
 import 'dart:io' show Platform;
 
+bool parseBusy(List<int> d) {  // 추가: busy 파싱
+  if (d.length >= 10 && d[0] == 0xC0 && d[1] == 0xDE && d[2] == 0x02) {
+    return d[9] == 0x01;  // 9번 인덱스: busy 바이트 (stable_id 6바이트 후)
+  }
+  return false;
+}
+
 class Hit {
   final String key;
   String remoteId;
@@ -15,6 +22,7 @@ class Hit {
   int? seq;
   int len;
   DateTime lastSeen;
+  bool isBusy;
 
   Hit({
     required this.key,
@@ -25,6 +33,7 @@ class Hit {
     required this.seq,
     required this.len,
     required this.lastSeen,
+    required this.isBusy,
   });
 }
 
@@ -95,15 +104,34 @@ class BleService extends ChangeNotifier {
   bool isConnected(String remoteId) => _sessions.containsKey(remoteId);
   Stream<String> get rxText$ => _rxTextCtrl.stream;
 
+  // List<Hit> get items {
+  //   final now = DateTime.now();
+  //   final keys = _order.where((key) {
+  //     final h = _hits[key];
+  //     if (h == null) return false;
+  //     final fresh = now.difference(h.lastSeen) < kDisappearAfter;
+  //     final conn = _sessions.containsKey(h.remoteId);
+  //     return fresh || conn;
+  //   }).toList();
+  //   return keys.map((k) => _hits[k]!).toList();
+  // }
+
   List<Hit> get items {
     final now = DateTime.now();
     final keys = _order.where((key) {
       final h = _hits[key];
       if (h == null) return false;
-      final fresh = now.difference(h.lastSeen) < kDisappearAfter;
-      final conn = _sessions.containsKey(h.remoteId);
-      return fresh || conn;
+
+      // 1. 연결되어 있으면 무조건 표시
+      if (_sessions.containsKey(h.remoteId)) {
+        return true;
+      }
+
+      // 2. 연결 안 되어 있으면 → 5분 이상 광고가 없으면 숨김
+      final age = now.difference(h.lastSeen);
+      return age <= const Duration(minutes: 5);
     }).toList();
+
     return keys.map((k) => _hits[k]!).toList();
   }
 
@@ -195,12 +223,14 @@ class BleService extends ChangeNotifier {
         bool matchByMfg = false;
         int? seq;
         String? stableIdHex;
+        bool busy = false;
 
         if (m.containsKey(kManufacturerId)) {
           final raw = m[kManufacturerId]!;
           final Uint8List bytes = raw is Uint8List ? raw : Uint8List.fromList(List<int>.from(raw));
           stableIdHex = parseStableId(bytes);
           seq = parseSmartCareSeq(bytes);
+          busy = parseBusy(bytes);
           matchByMfg = (stableIdHex != null) || (seq != null);
         }
 
@@ -222,6 +252,7 @@ class BleService extends ChangeNotifier {
               seq: seq,
               len: m[kManufacturerId]?.length ?? prev.len,
               lastSeen: DateTime.now(),
+              isBusy: busy,
             );
             changed = true;
           }
@@ -243,6 +274,7 @@ class BleService extends ChangeNotifier {
             seq: seq,
             len: m[kManufacturerId]?.length ?? 0,
             lastSeen: DateTime.now(),
+            isBusy: busy,
           );
           if (!_order.contains(keyId)) _order.add(keyId); // 스캔 순서 유지
           changed = true;
@@ -254,7 +286,8 @@ class BleService extends ChangeNotifier {
               prev.seq != seq ||
               prev.len != newLen ||
               prev.name != displayName ||
-              prev.stableIdHex != (stableIdHex ?? prev.stableIdHex);
+              prev.stableIdHex != (stableIdHex ?? prev.stableIdHex) ||
+              prev.isBusy != busy;
           if (any) {
             prev
               ..remoteId = remoteId
@@ -263,7 +296,8 @@ class BleService extends ChangeNotifier {
               ..seq = seq
               ..stableIdHex = (stableIdHex ?? prev.stableIdHex)
               ..len = newLen
-              ..lastSeen = DateTime.now();
+              ..lastSeen = DateTime.now()
+              ..isBusy = busy;
             changed = true;
           } else {
             prev.lastSeen = DateTime.now();
@@ -283,22 +317,49 @@ class BleService extends ChangeNotifier {
     });
   }
 
-  /// 광고가 끊긴 장치만 제거 (리스트 순서 유지)
-  void _startPruneTimerIfNeeded() {
-    _pruneTimer ??= Timer.periodic(const Duration(seconds: 2), (_) {
-      final now = DateTime.now();
-      final before = _hits.length;
+  // /// 광고가 끊긴 장치만 제거 (리스트 순서 유지)
+  // void _startPruneTimerIfNeeded() {
+  //   _pruneTimer ??= Timer.periodic(const Duration(seconds: 2), (_) {
+  //     final now = DateTime.now();
+  //     final before = _hits.length;
 
-      _hits.removeWhere((_, h) {
-        final fresh = now.difference(h.lastSeen) <= kDisappearAfter;
-        final connected = _sessions.containsKey(h.remoteId);
-        return !(fresh || connected); // 광고도 없고 연결도 안 된 장치만 제거
+  //     _hits.removeWhere((_, h) {
+  //       final fresh = now.difference(h.lastSeen) <= kDisappearAfter;
+  //       final connected = _sessions.containsKey(h.remoteId);
+  //       return !(fresh || connected); // 광고도 없고 연결도 안 된 장치만 제거
+  //     });
+
+  //     _order.removeWhere((key) => !_hits.containsKey(key));
+
+  //     if (_hits.length != before) {
+  //       _scheduleNotify();
+  //     }
+  //   });
+  // }
+
+  void _startPruneTimerIfNeeded() {
+    _pruneTimer ??= Timer.periodic(const Duration(seconds: 10), (_) {
+      final now = DateTime.now();
+      int removed = 0;
+
+      _hits.removeWhere((key, h) {
+        // 연결 중이면 절대 제거하지 않음
+        if (_sessions.containsKey(h.remoteId)) {
+          return false;
+        }
+
+        // 연결 안 된 상태에서 5분 이상 광고 없으면 제거
+        if (now.difference(h.lastSeen) > const Duration(minutes: 5)) {
+          removed++;
+          return true;
+        }
+        return false;
       });
 
-      _order.removeWhere((key) => !_hits.containsKey(key));
-
-      if (_hits.length != before) {
+      if (removed > 0) {
+        _order.removeWhere((key) => !_hits.containsKey(key));
         _scheduleNotify();
+        debugPrint('Removed $removed device(s) - no advertisement for >5min');
       }
     });
   }
@@ -384,6 +445,11 @@ class BleService extends ChangeNotifier {
         if (data.isEmpty) return;
         final text = await compute(utf8.decode, data);
         _rxTextCtrl.add(text);
+        if (text.trim() == "already_connected") {  // 추가: 서버로부터 busy 메시지 받음
+          debugPrint('❌ 이미 연결된 상태: 자동 disconnect');
+          await disconnect(remoteId);
+          throw Exception('이미 다른 기기와 연결되어 있습니다.');
+        }
       });
 
       final connSub = dev.connectionState.listen((s) async {
@@ -421,11 +487,39 @@ class BleService extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Future<void> _disposeSession(String remoteId) async {
+  //   final sess = _sessions.remove(remoteId);
+  //   if (sess != null) {
+  //     debugPrint('🗑️ 세션 정리 중: $remoteId');
+  //     await sess.dispose();
+  //   }
+  // }
+
   Future<void> _disposeSession(String remoteId) async {
     final sess = _sessions.remove(remoteId);
     if (sess != null) {
       debugPrint('🗑️ 세션 정리 중: $remoteId');
       await sess.dispose();
+
+      // 연결 해제 직후에도 목록에 최소 5분은 남아있게
+      final hit = _hits.values.firstWhere(
+        (h) => h.remoteId == remoteId,
+        orElse: () => Hit(
+          key: '',
+          remoteId: '',
+          name: '',
+          rssi: 0,
+          stableIdHex: null,
+          seq: null,
+          len: 0,
+          lastSeen: DateTime.now(),
+          isBusy: false,
+        ),
+      );
+      if (hit.key.isNotEmpty) {
+        hit.lastSeen = DateTime.now();
+        _scheduleNotify();
+      }
     }
   }
 

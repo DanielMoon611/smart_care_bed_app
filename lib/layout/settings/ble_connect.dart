@@ -111,6 +111,7 @@ class _BleConnectPageState extends State<BleConnectPage> {
   Widget build(BuildContext context) {
     final items = svc.items;
     final hasConnection = svc.firstConnectedId != null;
+    final now = DateTime.now();
     return ScaffoldMessenger(
       key: _messengerKey,
       child: Scaffold(
@@ -183,35 +184,42 @@ class _BleConnectPageState extends State<BleConnectPage> {
                       itemBuilder: (_, i) {
                         final h = items[i];
                         final connected = svc.isConnected(h.remoteId);
+                        final age = now.difference(h.lastSeen);
+                        final isStale = !connected && age > const Duration(minutes: 3);
                         
                         return ListTile(
                           key: ValueKey(h.key),
                           dense: true,
-                          tileColor: connected ? Colors.green.shade50 : null,
+                          tileColor: connected ? Colors.green.shade50 : (isStale ? Colors.grey.shade100 : null),
                           leading: Icon(
                             connected ? Icons.bluetooth_connected : Icons.bluetooth,
-                            color: connected ? Colors.green : Colors.grey,
+                            color: connected ? Colors.green : (isStale ? Colors.grey : Colors.blueGrey)
                           ),
                           title: Text(
                             kFixedName,
                             style: TextStyle(
                               fontWeight: connected ? FontWeight.bold : FontWeight.normal,
+                              color: isStale ? Colors.grey[700] : null,
                             ),
                           ),
                           subtitle: h.stableIdHex != null
-                              ? Text("StableID: ${h.stableIdHex}")
-                              : null,
+                              ? Text(
+                                  "StableID: ${h.stableIdHex}${isStale ? ' (오래된 광고)' : ''}",
+                                  style: TextStyle(color: isStale ? Colors.grey : null),
+                                )
+                              : const Text("Stable ID 대기 중...",
+                                  style: TextStyle(color: Colors.orange)),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               if (!connected)
                                 ElevatedButton(
                                   // ✅ 다른 기기가 연결되어 있으면 비활성화
-                                  onPressed: !hasConnection
+                                  onPressed: !h.isBusy && !hasConnection
                                       ? () => _handleConnect(h.remoteId)
                                       : null,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: hasConnection ? Colors.grey : null,
+                                    backgroundColor: h.isBusy || hasConnection ? Colors.grey : null,
                                   ),
                                   child: const Text('연결하기'),
                                 )
